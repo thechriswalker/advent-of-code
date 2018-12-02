@@ -83,43 +83,13 @@ func createFiles(p Problem) error {
 var mainTpl = template.Must(template.New("main").Parse(`package main
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
-	"os/exec"
+	"../../aoc"
 )
 
 func main() {
-	fmt.Println("##############################")
-	fmt.Println("#                            #")
-	//          "#  AdventOfCode YYYY Day DD  #
-	fmt.Println("#  AdventOfCode {{.Year}} Day {{ printf "%02d" .Day}}  #")
-	fmt.Println("#                            #")
-	fmt.Println("##############################")
-	fmt.Println()
-	fmt.Print("Running tests: ")
-	tests, err := exec.Command("go", "test").Output()
-	if err != nil {
-		fmt.Println("FAIL")
-		os.Stdout.Write(tests)
-		os.Exit(1)
-	}
-	fmt.Println("PASS")
-	b, err := ioutil.ReadFile("input.txt")
-	if err != nil {
-		if os.IsNotExist(err) {
-			log.Fatalln("Please create 'input.txt' with your problem input")
-		}
-		log.Fatalln("Error trying to read input file ('input.txt'):", err)
-	}
-	input := string(b)
-
-	fmt.Print("Running problem 1: ")
-	fmt.Println(solve1(input))
-	fmt.Print("Running problem 2: ")
-	fmt.Println(solve2(input))
+	aoc.Run({{.Year}}, {{.Day}}, solve1, solve2)
 }
+
 
 // Implement Solution to Problem 1
 func solve1(input string) string {
