@@ -191,3 +191,12 @@ Upon entering the isolated containment area, however, you notice some extra part
 These work just like the other generators and microchips. You'll have to get them up to assembly as well.
 
 What is the minimum number of steps required to bring all of the objects, including these four new ones, to the fourth floor?
+
+## Comments
+
+This is the hardest one I have found yet. I took me ages, including after I had "spoiled"
+and read some answers. It turned out that I didn't spot it for the graph search it is, nor
+how to approach such a problem, let alone solve it.
+
+But finally I did (about 1 year after I started), and it came in useful for 2016/03 which
+is a similiar (if simpler) graph traversal problem.

@@ -19,6 +19,8 @@ type Problem struct {
 func main() {
 	// input should be year day
 	prob := Problem{}
+	var runOnlyTests bool
+	flag.BoolVar(&runOnlyTests, "test-only", false, "run only tests")
 	flag.IntVar(&prob.Year, "year", time.Now().Year(), "the year")
 	flag.IntVar(&prob.Day, "day", time.Now().Day(), "the day of december")
 	flag.Parse()
@@ -47,7 +49,13 @@ func main() {
 		f.Close()
 	}
 	// file exists run it!
-	run := exec.Command("go", "run", "main.go")
+	var arg3 string
+	if runOnlyTests {
+		arg3 = "-test-only=true"
+	} else {
+		arg3 = "-test-only=false"
+	}
+	run := exec.Command("go", "run", "main.go", arg3)
 	run.Stderr = os.Stderr
 	run.Stdout = os.Stdout
 	run.Run()
