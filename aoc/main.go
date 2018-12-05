@@ -24,6 +24,9 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 		}
 		log.Fatalln("Error trying to read input file ('input.txt'):", err)
 	}
+	if len(b) == 0 {
+		log.Fatalln("Please add your problem input to 'input.txt'")
+	}
 	input := string(b)
 
 	fmt.Print("Solving problem 1: ")
