@@ -89,7 +89,7 @@ resulting region looks like this:
 ..........
 .A........
 ..........
-...###..C.
+...#*#..C.
 ..#D###...
 ..###E#...
 .B.###....
@@ -111,10 +111,17 @@ function:
 
 Total distance: `5 + 6 + 4 + 2 + 3 + 10 = 30`
 
-Because the total distance to all coordinates (`30`) is less than `32`, the location is within the region.
+Because the total distance to all coordinates (`30`) is less than `32`, the
+location is within the region.
 
-This region, which also includes coordinates D and E, has a total size of 16.
+This region, which also includes coordinates `D` and `E`, has a total size of 16.
 
-Your actual region will need to be much larger than this example, though, instead including all locations with a total distance of less than 10000.
+Your actual region will need to be much larger than this example, though, instead
+including all locations with a total distance of less than `10000`.
 
-What is the size of the region containing all locations which have a total distance to all given coordinates of less than 10000?
+What is the size of the region containing all locations which have a total distance
+to all given coordinates of less than `10000`?
+
+## Comments
+
+This one was fun! Mostly for the pretty terminal art to visually verify the algorithm.
