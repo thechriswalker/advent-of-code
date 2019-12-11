@@ -293,11 +293,14 @@ func parseStatsHTML(body string, progress *YearProgress) error {
 					Rank:  rank1,
 					Score: score1,
 				},
-				Part2: &PartProgress{
+			}
+			// time2 will be nil if we haven't done it
+			if time2 != "-" {
+				dp.Part2 = &PartProgress{
 					Time:  time2,
 					Rank:  rank2,
 					Score: score2,
-				},
+				}
 			}
 			progress.Days = append(progress.Days, dp)
 		}
