@@ -9,17 +9,29 @@ import (
 	"os/exec"
 )
 
-var testsOnly = flag.Bool("test-only", false, "Only run the tests")
+func PrintHeader(year, day int) {
+	date := "       "
+	if year != 0 {
+		if day != 0 {
+			date = fmt.Sprintf("%d/%02d", year, day)
+		} else {
+			date = fmt.Sprintf(" %d  ", year)
+		}
+	}
+
+	fmt.Println()
+	fmt.Println("         ┏━━━━━━━━━━━━━━━━━\x1b[1;93m*\x1b[0m━━━┓")
+	fmt.Println("         ┃                 \x1b[1;32m#\x1b[0m   ┃")
+	fmt.Println("         ┃  \x1b[1;37mAdventOfCode  \x1b[1;32m###\x1b[0m  ┃")
+	fmt.Printf("         ┃    \x1b[1;93m%s\x1b[0m    \x1b[1;32m#####\x1b[0m ┃\n", date)
+	fmt.Println("         ┗━━━━━━━━━━━━━━━━━\x1b[1;31m#\x1b[0m━━━┛")
+	fmt.Println()
+}
 
 func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
+	var testsOnly = flag.Bool("test-only", false, "Only run the tests")
 	flag.Parse()
-	fmt.Println("##############################")
-	fmt.Println("#                            #")
-	//          "#  AdventOfCode YYYY Day DD  #
-	fmt.Printf("#  AdventOfCode %d Day %02d  #\n", YEAR, DAY)
-	fmt.Println("#                            #")
-	fmt.Println("##############################")
-	fmt.Println()
+	PrintHeader(YEAR, DAY)
 	runTest(1)
 	var input string
 	if !*testsOnly {

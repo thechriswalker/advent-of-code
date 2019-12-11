@@ -9,28 +9,33 @@ import (
 
 // Program represents the interpreter
 type Program struct {
-	pc        int
-	registers []int
-	Failed    bool
-	Input     chan int
-	Output    chan int
+	pc           int64
+	code         []int64
+	memory       map[int64]int64 // to allow sparse memory
+	relativeBase int64
+	initialised  bool
+	Failed       bool
+	Input        chan int64
+	Output       chan int64
+	Halted       chan struct{}
 }
 
 // OpCodes
 const (
-	opADD      = 1
-	opMUL      = 2
-	opINPUT    = 3
-	opOUTPUT   = 4
-	opJUMPT    = 5
-	opJUMPF    = 6
-	opLESSTHAN = 7
-	opEQUALS   = 8
-	opHALT     = 99
+	opADD       = 1
+	opMUL       = 2
+	opINPUT     = 3
+	opOUTPUT    = 4
+	opJUMPT     = 5
+	opJUMPF     = 6
+	opLESSTHAN  = 7
+	opEQUALS    = 8
+	opADJUSTREL = 9
+	opHALT      = 99
 )
 
 // EnqueueInput asynchronously queues values for input
-func (p *Program) EnqueueInput(in ...int) {
+func (p *Program) EnqueueInput(in ...int64) {
 	go func() {
 		for _, n := range in {
 			p.Input <- n
@@ -39,42 +44,42 @@ func (p *Program) EnqueueInput(in ...int) {
 }
 
 // GetOutput waits for the next output to be emitted
-func (p *Program) GetOutput() int {
+func (p *Program) GetOutput() int64 {
 	return <-p.Output
 }
 
-// Debug is like Run, but dumps the program at each tick
-func (p *Program) Debug() bool {
+func (p *Program) Initialise() {
 	p.pc = 0
-	for p.Tick() {
-		log.Println(p)
+	// we load the memory! (less need to copy the program now)
+	// initialise with twice as much
+	p.memory = make(map[int64]int64, len(p.code)*2)
+	for i, c := range p.code {
+		p.memory[int64(i)] = c
 	}
-	return !p.Failed
+	p.initialised = true
 }
 
 // Run executes the program returning true if no errors occured
 func (p *Program) Run() bool {
-	p.pc = 0
+	if !p.initialised {
+		p.Initialise()
+	}
 	for p.Tick() {
 	}
 	return !p.Failed
 }
 
 // RunAsync returns a channel which returns the exit status when finished
-func (p *Program) RunAsync(debug bool) <-chan bool {
+func (p *Program) RunAsync() <-chan bool {
 	ch := make(chan bool)
 	go func() {
-		if debug {
-			ch <- p.Debug()
-		} else {
-			ch <- p.Run()
-		}
+		ch <- p.Run()
 	}()
 	return ch
 }
 
 func (p *Program) String() string {
-	return fmt.Sprintf("{pc:%d, reg:%v}", p.pc, p.registers)
+	return fmt.Sprintf("{pc:%d, reg:%v}", p.pc, p.memory)
 }
 
 // Tick returns true while the program should continue
@@ -82,18 +87,17 @@ func (p *Program) Tick() bool {
 	op := p.consume()
 	switch op % 100 {
 	case opADD:
-		a, b := p.getTwoArgs(op)
-		c := p.consume() // c is a raw address
+		a, b, c := p.getTwoArgsAndAddress(op)
 		p.Set(c, a+b)
 
 	case opMUL:
-		a, b := p.getTwoArgs(op)
-		c := p.consume() // c is a raw address
+		a, b, c := p.getTwoArgsAndAddress(op)
 		p.Set(c, a*b)
 
 	case opINPUT:
-		// take an input, always a register address
-		a := p.consume()
+		// take an input, always a address address
+		// a := p.getOneArg(op) definitely wrong
+		a := p.getOneAddress(op)
 		p.Set(a, <-p.Input)
 
 	case opOUTPUT:
@@ -112,23 +116,26 @@ func (p *Program) Tick() bool {
 		}
 
 	case opLESSTHAN:
-		a, b := p.getTwoArgs(op)
-		c := p.consume() // raw address
+		a, b, c := p.getTwoArgsAndAddress(op)
 		if a < b {
 			p.Set(c, 1)
 		} else {
 			p.Set(c, 0)
 		}
 	case opEQUALS:
-		a, b := p.getTwoArgs(op)
-		c := p.consume() // raw address
+		a, b, c := p.getTwoArgsAndAddress(op)
 		if a == b {
 			p.Set(c, 1)
 		} else {
 			p.Set(c, 0)
 		}
 
+	case opADJUSTREL:
+		a := p.getOneArg(op)
+		p.relativeBase += a
+
 	case opHALT:
+		close(p.Halted)
 		return false
 
 	default:
@@ -138,55 +145,90 @@ func (p *Program) Tick() bool {
 	return true
 }
 
-func (p *Program) consume() int {
-	v := p.registers[p.pc]
+func (p *Program) consume() int64 {
+	v := p.memory[p.pc]
 	p.pc++
 	return v
 }
 
-func (p *Program) getOneArg(op int) int {
+func (p *Program) getOneArg(op int64) int64 {
 	a := p.consume()
 	return p.get(a, op/100)
 }
 
-func (p *Program) getTwoArgs(op int) (int, int) {
+func (p *Program) getOneAddress(op int64) int64 {
+	a := p.consume()
+	return p.getAddress(a, op/100)
+}
+
+func (p *Program) getTwoArgs(op int64) (int64, int64) {
 	a := p.consume()
 	b := p.consume()
 	return p.get(a, op/100), p.get(b, op/1000)
 }
 
-func (p *Program) getThreeArgs(op int) (int, int, int) {
+func (p *Program) getTwoArgsAndAddress(op int64) (int64, int64, int64) {
 	a := p.consume()
 	b := p.consume()
 	c := p.consume()
-	return p.get(a, op/100), p.get(b, op/1000), p.get(c, op/10000)
+	return p.get(a, op/100), p.get(b, op/1000), p.getAddress(c, op/10000)
 }
 
-// Get a value from a register
-func (p *Program) Get(register int) int {
-	return p.get(register, 0) // positional, value at register.
+// Get a value from a address
+func (p *Program) Get(address int64) int64 {
+	return p.get(address, 0) // positional, value at address.
 }
 
-func (p *Program) get(value, mode int) int {
+func (p *Program) get(value, mode int64) int64 {
 	// check the op and pos to see if we are in positional or immediate mode
-	if mode%2 == 0 {
-		// positional, value is register
-		return p.registers[value]
+	//log.Printf("Getting value from %v in mode %d\n", value, mode%10)
+	switch mode % 10 {
+	case 0:
+		// positional, value is address
+		return p.memory[value]
+	case 1:
+		// immediate, value is value
+		return value
+	case 2:
+		// relative value, based on current relative-base
+		return p.memory[p.relativeBase+value]
+	default:
+		panic("unknown memory access mode")
 	}
-	// immediate, value is value
-	return value
 }
 
-// Set a value at a register address
-func (p *Program) Set(register, value int) {
-	p.registers[register] = value
+func (p *Program) getAddress(value, mode int64) int64 {
+	// no positional, but could be relative.
+	switch mode % 10 {
+	case 0, 1:
+		// use value as address in either mode
+		return value
+	case 2:
+		// relative value, based on current relative-base
+		return p.relativeBase + value
+	default:
+		panic("unknown address reference mode")
+	}
+}
+
+// Set a value at a address address
+func (p *Program) Set(address, value int64) {
+	//log.Printf("setting value %v at address %v", value, address)
+	if address < 0 {
+		log.Println(p)
+		panic("Negative Memory Address Access")
+	}
+	if !p.initialised {
+		p.Initialise()
+	}
+	p.memory[address] = value
 }
 
 // New creates a new program
 func New(code string) *Program {
 	rd := strings.NewReader(strings.TrimSpace(code))
-	reg := []int{}
-	var x int
+	reg := []int64{}
+	var x int64
 	var err error
 	for {
 		_, err = fmt.Fscanf(rd, "%d", &x)
@@ -197,9 +239,10 @@ func New(code string) *Program {
 		reg = append(reg, x)
 	}
 	return &Program{
-		registers: reg,
-		Input:     make(chan int),
-		Output:    make(chan int),
+		code:   reg,
+		Input:  make(chan int64),
+		Output: make(chan int64),
+		Halted: make(chan struct{}),
 	}
 }
 
@@ -208,10 +251,11 @@ func New(code string) *Program {
 // be sure to copy before running.
 func (p *Program) Copy() *Program {
 	p2 := &Program{
-		registers: make([]int, len(p.registers)),
-		Input:     make(chan int),
-		Output:    make(chan int),
+		code:   make([]int64, len(p.code)),
+		Input:  make(chan int64),
+		Output: make(chan int64),
+		Halted: make(chan struct{}),
 	}
-	copy(p2.registers, p.registers)
+	copy(p2.code, p.code)
 	return p2
 }

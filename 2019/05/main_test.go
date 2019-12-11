@@ -11,8 +11,8 @@ import (
 // need to change the defaults here
 type Case struct {
 	Program  string
-	Input    int
-	Expected int
+	Input    int64
+	Expected int64
 }
 
 // var problem1cases = []Case{
@@ -51,7 +51,7 @@ func TestProblem2(t *testing.T) {
 	for _, c := range problem2cases {
 		p := intcode.New(c.Program)
 		p.EnqueueInput(c.Input)
-		p.RunAsync(false)
+		p.RunAsync()
 		actual := p.GetOutput()
 		if c.Expected != actual {
 			t.Fatalf("Expected: '%d', Actual: '%d'", c.Expected, actual)

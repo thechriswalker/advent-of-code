@@ -15,8 +15,8 @@ func main() {
 func solve1(input string) string {
 	p := intcode.New(input)
 	p.EnqueueInput(1)
-	done := p.RunAsync(false)
-	var lastOutput int
+	done := p.RunAsync()
+	var lastOutput int64
 	cont := true
 	for cont {
 		select {
@@ -34,6 +34,6 @@ func solve1(input string) string {
 func solve2(input string) string {
 	p := intcode.New(input)
 	p.EnqueueInput(5)
-	p.RunAsync(false)
+	p.RunAsync()
 	return fmt.Sprintf("%d", p.GetOutput())
 }

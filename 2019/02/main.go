@@ -25,11 +25,11 @@ func solve1(input string) string {
 
 // Implement Solution to Problem 2
 func solve2(input string) string {
-	target := 19690720
+	target := int64(19690720)
 	clean := intcode.New(input)
 	// naive exhaustive search
-	for n := 0; n < 100; n++ {
-		for v := 0; v < 100; v++ {
+	for n := int64(0); n < 100; n++ {
+		for v := int64(0); v < 100; v++ {
 			p := clean.Copy()
 			p.Set(1, n)
 			p.Set(2, v)
