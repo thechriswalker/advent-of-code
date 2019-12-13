@@ -99,11 +99,14 @@ type Robot struct {
 
 func (r *Robot) Run() {
 	r.pg.RunAsync()
+	input := func() int64 {
+		return r.hull[r.position]
+	}
 	for {
 		// the loop is send color at position
 		// or halt if program halts
 		select {
-		case r.pg.Input <- r.hull[r.position]:
+		case r.pg.Input <- input:
 		case <-r.pg.Halted:
 			return
 		}

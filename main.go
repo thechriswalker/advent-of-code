@@ -73,6 +73,7 @@ func main() {
 		arg3 = "-test-only=false"
 	}
 	run := exec.Command("go", "run", "main.go", arg3)
+	run.Stdin = os.Stdin
 	run.Stderr = os.Stderr
 	run.Stdout = os.Stdout
 	run.Run()

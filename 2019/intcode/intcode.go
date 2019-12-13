@@ -15,7 +15,7 @@ type Program struct {
 	relativeBase int64
 	initialised  bool
 	Failed       bool
-	Input        chan int64
+	Input        chan func() int64
 	Output       chan int64
 	Halted       chan struct{}
 }
@@ -38,7 +38,7 @@ const (
 func (p *Program) EnqueueInput(in ...int64) {
 	go func() {
 		for _, n := range in {
-			p.Input <- n
+			p.Input <- func() int64 { return n }
 		}
 	}()
 }
@@ -98,11 +98,27 @@ func (p *Program) Tick() bool {
 		// take an input, always a address address
 		// a := p.getOneArg(op) definitely wrong
 		a := p.getOneAddress(op)
-		p.Set(a, <-p.Input)
+		select {
+		case in := <-p.Input:
+			// immediate input
+			p.Set(a, in())
+		default:
+			// deferred input
+			//log.Println("[intcode] waiting for input send...")
+			p.Set(a, (<-p.Input)())
+		}
 
 	case opOUTPUT:
 		// emit an output
-		p.Output <- p.getOneArg(op)
+		out := p.getOneArg(op)
+		select {
+		case p.Output <- out:
+			// immediate send.
+		default:
+			// deferred send.
+			//log.Println("[intcode] waiting for ouput read...")
+			p.Output <- out
+		}
 
 	case opJUMPT:
 		a, b := p.getTwoArgs(op)
@@ -240,7 +256,7 @@ func New(code string) *Program {
 	}
 	return &Program{
 		code:   reg,
-		Input:  make(chan int64),
+		Input:  make(chan func() int64),
 		Output: make(chan int64),
 		Halted: make(chan struct{}),
 	}
@@ -252,7 +268,7 @@ func New(code string) *Program {
 func (p *Program) Copy() *Program {
 	p2 := &Program{
 		code:   make([]int64, len(p.code)),
-		Input:  make(chan int64),
+		Input:  make(chan func() int64),
 		Output: make(chan int64),
 		Halted: make(chan struct{}),
 	}
