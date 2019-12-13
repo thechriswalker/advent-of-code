@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"../../aoc"
 	"../intcode"
@@ -74,7 +75,7 @@ func solve2(input string) string {
 
 	// now we use AI to play the game.
 	// always move towards the last "ball" X coordinate
-	arcade := &Arcade{screen: &Screen{pixels: map[[2]int64]int64{}}}
+	arcade := &Arcade{}
 
 	get := func() int64 {
 		// move padd_x towards ball_x
@@ -88,13 +89,15 @@ func solve2(input string) string {
 		return joy_left
 	}
 
-	arcade.Play(input, get, false)
+	v, _ := os.LookupEnv("AOC_ANIMATE")
+	animate := v == "1"
+
+	arcade.Play(input, get, animate)
 
 	return fmt.Sprint(arcade.score)
 }
 
 type Arcade struct {
-	screen *Screen
 	score  int64
 	ticks  int64
 	ball_x int64
@@ -106,41 +109,67 @@ func (a *Arcade) Play(code string, input func() int64, draw bool) {
 	pg.Set(0, 2)
 	pg.RunAsync()
 
-	init := false
+	// clear the screen first
+	if draw {
+		fmt.Print("\x1b[2J\x1b[H")
+	}
 
-	redraw := func() {
-		if !draw || !init {
+	updateScore := func() {
+		if draw {
+			fmt.Printf("\x1b[H\x1b[1;96m[ARCADE]\x1b[0m score: \x1b[1;97m%06d\x1b[0m", a.score)
+		}
+	}
+
+	var max_y int64
+
+	drawTile := func(x, y, t int64) {
+		if !draw {
 			return
 		}
-		//	time.Sleep(10 * time.Millisecond)
-		// now display the game!
-		// wipe the terminal, move to home
-		fmt.Print("\x1b[2J\x1b[H")
-		// output Score line:
-		fmt.Printf("[ARCADE] score: %06d [ticks:%06d]\n", a.score, a.ticks)
-		// output screen
-		a.screen.Print(os.Stdout)
+		// move to position
+		// y is +3to account for the top line (score) and padding
+		// x is +2 for padding
+		fmt.Printf("\x1b[%d;%dH", y+3, x+2)
+		if y+3 > max_y {
+			max_y = y + 3
+		}
+		// now write the character
+		switch t {
+		case tile_wall:
+			fmt.Print("\x1b[1;90m#\x1b[0m")
+		case tile_block:
+			fmt.Print("\x1b[1;97m#\x1b[0m")
+		case tile_ball:
+			fmt.Print("\x1b[1;93mO\x1b[0m")
+		case tile_paddle:
+			fmt.Print("\x1b[1;96m=\x1b[0m")
+		default:
+			fmt.Print(" ")
+		}
+		fmt.Print("\x1b[H")
 	}
 
 	var x, y, t int64
 	for {
-		redraw()
 		// we wait for the program to halt collecting 3 outputs at a time.
 		// or halt if program halts
 		select {
 		case <-pg.Halted:
-			fmt.Println("Game Over!")
+			if draw {
+				fmt.Printf("\x1b[%dH             --- GAME OVER ---\n", max_y+1)
+			}
 			return
 		case pg.Input <- input:
-			// first input is initialisation
-			init = true
+			// sleep a frame after input
+			if draw {
+				time.Sleep(1 * time.Millisecond)
+			}
 		case x = <-pg.Output:
 			y = <-pg.Output
 			t = <-pg.Output
 			if x == -1 && y == 0 {
-				inc := t - a.score
-				fmt.Printf("Score increased by %d, to %d\n", inc, t)
 				a.score = t
+				updateScore()
 			} else {
 				if t == tile_ball {
 					a.ball_x = x
@@ -148,7 +177,7 @@ func (a *Arcade) Play(code string, input func() int64, draw bool) {
 				if t == tile_paddle {
 					a.padd_x = x
 				}
-				a.screen.draw(x, y, t)
+				drawTile(x, y, t)
 			}
 		}
 		a.ticks++
