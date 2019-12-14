@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"time"
 
 	"../../aoc"
@@ -90,9 +91,8 @@ func solve2(input string) string {
 	}
 
 	v, _ := os.LookupEnv("AOC_ANIMATE")
-	animate := v == "1"
-
-	arcade.Play(input, get, animate)
+	ms, _ := strconv.Atoi(v)
+	arcade.Play(input, get, ms)
 
 	return fmt.Sprint(arcade.score)
 }
@@ -104,10 +104,12 @@ type Arcade struct {
 	padd_x int64
 }
 
-func (a *Arcade) Play(code string, input func() int64, draw bool) {
+func (a *Arcade) Play(code string, input func() int64, ms int) {
 	pg := intcode.New(code)
 	pg.Set(0, 2)
 	pg.RunAsync()
+
+	draw := ms > 0
 
 	// clear the screen first
 	if draw {
@@ -162,7 +164,7 @@ func (a *Arcade) Play(code string, input func() int64, draw bool) {
 		case pg.Input <- input:
 			// sleep a frame after input
 			if draw {
-				time.Sleep(1 * time.Millisecond)
+				time.Sleep(time.Duration(ms) * time.Millisecond)
 			}
 		case x = <-pg.Output:
 			y = <-pg.Output
