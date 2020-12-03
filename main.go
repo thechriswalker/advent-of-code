@@ -328,7 +328,7 @@ type PartProgress struct {
 
 func (yp *YearProgress) String() string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "\x1b[1;90m[%s]\x1b[0m %d ", yp.Updated.Format(time.Stamp), yp.Year)
+	fmt.Fprintf(&b, "\x1b[1;90m[%s]\x1b[0m %d ", yp.Updated.Format(time.ANSIC), yp.Year)
 
 	// first we'll get the days into a map.
 	days := make(map[int]DayProgress, len(yp.Days))
