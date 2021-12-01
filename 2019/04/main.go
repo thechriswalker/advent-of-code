@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"../../aoc"
+	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
 func main() {

@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"strings"
 
-	"../../aoc"
+	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
 func main() {

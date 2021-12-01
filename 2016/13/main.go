@@ -5,7 +5,7 @@ import (
 	"math/bits"
 	"strings"
 
-	"../../aoc"
+	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
 func main() {

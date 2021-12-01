@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"../../aoc"
 	"../intcode"
+	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
 func main() {

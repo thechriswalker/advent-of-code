@@ -15,7 +15,7 @@ import (
 	"text/template"
 	"time"
 
-	"./aoc"
+	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
 type Problem struct {
@@ -109,7 +109,7 @@ func createFiles(p Problem) error {
 var mainTpl = template.Must(template.New("main").Parse(`package main
 
 import (
-	"../../aoc"
+	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
 func main() {

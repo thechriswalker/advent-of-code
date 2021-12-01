@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"../../aoc"
+	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
 func main() {

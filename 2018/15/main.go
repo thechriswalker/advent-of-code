@@ -1,7 +1,7 @@
 package main
 
 import (
-	"../../aoc"
+	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
 func main() {

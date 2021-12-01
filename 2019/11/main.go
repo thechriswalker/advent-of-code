@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
-	"../../aoc"
 	"../intcode"
+	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
 func main() {

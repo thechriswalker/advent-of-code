@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
 	"../intcode"
+	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
 func main() {

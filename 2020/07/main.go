@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/thechriswalker/advent-of-code/aoc"
 
 	"log"
 	"regexp"
