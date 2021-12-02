@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -41,20 +42,15 @@ func main() {
 		checkProgress()
 		return
 	}
-
 	basePath := fmt.Sprintf("%d/%02d", prob.Year, prob.Day)
 	if err := os.MkdirAll(basePath, 0755); err != nil {
 		log.Fatalf("could not make directorys: %s", basePath)
 	}
-	if err := os.Chdir(basePath); err != nil {
-		// this should not happen if the previous call succeeded
-		log.Fatalf("could not change to directorys: %s", basePath)
-	}
-	f, err := os.Open("main.go")
+	f, err := os.Open(basePath + "/main.go")
 	if err != nil {
 		if os.IsNotExist(err) {
 			// create the files
-			if err := createFiles(prob); err != nil {
+			if err := createFiles(prob, basePath); err != nil {
 				log.Fatalln("error creating problem templates:", err)
 			}
 			fmt.Println("Created problem template for", basePath)
@@ -64,6 +60,10 @@ func main() {
 		}
 	} else {
 		f.Close()
+	}
+	if err := os.Chdir(basePath); err != nil {
+		// this should not happen if the previous call succeeded
+		log.Fatalf("could not change to directorys: %s", basePath)
 	}
 	// file exists run it!
 	var arg3 string
@@ -79,7 +79,7 @@ func main() {
 	run.Run()
 }
 
-func createFiles(p Problem) error {
+func createFiles(p Problem, basePath string) error {
 	files := []struct {
 		name     string
 		template *template.Template
@@ -91,12 +91,35 @@ func createFiles(p Problem) error {
 	}
 
 	for _, f := range files {
-		file, err := os.Create(f.name)
+		file, err := os.Create(basePath + "/" + f.name)
 		if err != nil {
 			return err
 		}
 		if f.template != nil {
 			err = f.template.Execute(file, p)
+		}
+		if f.name == "input.txt" {
+			// let's try to fetch from AOC.
+			cookie, err := ioutil.ReadFile(".aoc-cookie")
+			if err != nil {
+				log.Println("We can fetch the input data from AoC if we have the cookie!")
+				log.Println("Could not read cookie from `./.aoc-cookie`, please make sure it is present. Error:", err)
+			} else {
+				req, err := http.NewRequest("GET", fmt.Sprintf("https://adventofcode.com/%d/day/%d/input", p.Year, p.Day), nil)
+				if err == nil {
+					req.AddCookie(&http.Cookie{
+						Name:  "session",
+						Value: string(cookie),
+					})
+					res, err := http.DefaultClient.Do(req)
+					if err != nil {
+						log.Println("Failed to fetch input data. Bad cookie? %w", err)
+					} else {
+						io.Copy(file, res.Body)
+						res.Body.Close()
+					}
+				}
+			}
 		}
 		file.Close()
 		if err != nil {
