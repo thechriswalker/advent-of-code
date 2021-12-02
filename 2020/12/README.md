@@ -2,11 +2,6 @@
 
 # Rain Risk
 
-## Comments
-
-I failed pretty hard on the second part here, I didn't know the algorithm to use and couldn't find the trick.
-Eventually I looked online and found the Chinese Remainder Theorem hint which was enough to finish the task.
-
 ## Problem 1
 
 Your ferry made decent progress toward the island, but the storm came in faster than anyone expected. The ferry needs to take **evasive actions**!

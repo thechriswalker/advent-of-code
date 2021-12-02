@@ -2,6 +2,11 @@
 
 # Shuttle Search
 
+## Comments
+
+I failed pretty hard on the second part here, I didn't know the algorithm to use and couldn't find the trick.
+Eventually I looked online and found the Chinese Remainder Theorem hint which was enough to finish the task.
+
 ## Problem 1
 
 Your ferry can make it safely to a nearby port, but it won't get much further. When you call to book another ship, you discover that no ships embark from that port to your vacation island. You'll need to get from the port to the nearest airport.
