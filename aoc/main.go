@@ -11,8 +11,11 @@ import (
 
 func PrintHeader(year, day int) {
 	date := "       "
+	url := "https://adventofcode.com/"
 	if year != 0 {
+		url += fmt.Sprintf("%d", year)
 		if day != 0 {
+			url += fmt.Sprintf("/day/%d", day)
 			date = fmt.Sprintf("%d/%02d", year, day)
 		} else {
 			date = fmt.Sprintf(" %d  ", year)
@@ -25,6 +28,7 @@ func PrintHeader(year, day int) {
 	fmt.Println("         ┃  \x1b[1;37mAdventOfCode  \x1b[1;32m###\x1b[0m  ┃")
 	fmt.Printf("         ┃    \x1b[1;93m%s\x1b[0m    \x1b[1;32m#####\x1b[0m ┃\n", date)
 	fmt.Println("         ┗━━━━━━━━━━━━━━━━━\x1b[1;31m#\x1b[0m━━━┛")
+	fmt.Printf("%s\n", url)
 	fmt.Println()
 }
 

@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"strings"
+	"time"
 )
 
 // Program represents the interpreter
@@ -18,6 +19,8 @@ type Program struct {
 	Input        chan func() int64
 	Output       chan int64
 	Halted       chan struct{}
+	ID           string
+	Debug        bool
 }
 
 // OpCodes
@@ -34,13 +37,11 @@ const (
 	opHALT      = 99
 )
 
-// EnqueueInput asynchronously queues values for input
-func (p *Program) EnqueueInput(in ...int64) {
-	go func() {
-		for _, n := range in {
-			p.Input <- func() int64 { return n }
-		}
-	}()
+// blocks until input is read
+func (p *Program) NextInput(in int64) {
+	p.Input <- func() int64 {
+		return in
+	}
 }
 
 // GetOutput waits for the next output to be emitted
@@ -82,6 +83,12 @@ func (p *Program) String() string {
 	return fmt.Sprintf("{pc:%d, reg:%v}", p.pc, p.memory)
 }
 
+func (p *Program) Log(a ...interface{}) {
+	if p.Debug {
+		log.Printf(`[%s] %s`, p.ID, fmt.Sprintln(a...))
+	}
+}
+
 // Tick returns true while the program should continue
 func (p *Program) Tick() bool {
 	op := p.consume()
@@ -101,11 +108,21 @@ func (p *Program) Tick() bool {
 		select {
 		case in := <-p.Input:
 			// immediate input
-			p.Set(a, in())
+			i := in()
+			p.Log("input...", i, "(sync)")
+			p.Set(a, i)
 		default:
 			// deferred input
-			//log.Println("[intcode] waiting for input send...")
-			p.Set(a, (<-p.Input)())
+			select {
+			case fi := <-p.Input:
+				i := fi()
+				p.Log("input...", i, "(async)")
+				p.Set(a, i)
+			case <-time.After(time.Second):
+				p.Log("output... <TIMEOUT> (async)")
+				p.Failed = true
+				return false
+			}
 		}
 
 	case opOUTPUT:
@@ -114,10 +131,17 @@ func (p *Program) Tick() bool {
 		select {
 		case p.Output <- out:
 			// immediate send.
+			p.Log("output...", out, "(sync)")
 		default:
 			// deferred send.
-			//log.Println("[intcode] waiting for ouput read...")
-			p.Output <- out
+			select {
+			case p.Output <- out:
+				p.Log("output...", out, "(async)")
+			case <-time.After(time.Second):
+				p.Log("output... <TIMEOUT> (async)")
+				p.Failed = true
+				return false
+			}
 		}
 
 	case opJUMPT:
@@ -256,6 +280,7 @@ func New(code string) *Program {
 	}
 	return &Program{
 		code:   reg,
+		ID:     "intcode",
 		Input:  make(chan func() int64),
 		Output: make(chan int64),
 		Halted: make(chan struct{}),
@@ -268,6 +293,7 @@ func New(code string) *Program {
 func (p *Program) Copy() *Program {
 	p2 := &Program{
 		code:   make([]int64, len(p.code)),
+		ID:     p.ID,
 		Input:  make(chan func() int64),
 		Output: make(chan int64),
 		Halted: make(chan struct{}),

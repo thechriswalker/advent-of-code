@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"../intcode"
+	"github.com/thechriswalker/advent-of-code/2019/intcode"
 	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
@@ -26,7 +26,7 @@ func solve2(input string) string {
 	pg := intcode.New(input)
 	// set the starting panel white
 	robot := &Robot{pg: pg, hull: map[[2]int]int64{
-		[2]int{0, 0}: 1,
+		{0, 0}: 1,
 	}}
 	robot.Run()
 	fmt.Println()
@@ -38,14 +38,14 @@ func solve2(input string) string {
 
 const (
 	black int64 = 0
-	white       = 1
-	right       = 0
-	left        = 1
+	white int64 = 1
+	right int64 = 0
+	left  int64 = 1
 
-	north = 0 // start facing north
-	east  = 1
-	south = 2
-	west  = 3
+	north int64 = 0 // start facing north
+	east  int64 = 1
+	south int64 = 2
+	west  int64 = 3
 )
 
 func turn(facing, turn int64) int64 {

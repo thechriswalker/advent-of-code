@@ -59,5 +59,41 @@ func isNice1(s string) bool {
 
 // Implement Solution to Problem 2
 func solve2(input string) string {
-	return "<unsolved>"
+	count := 0
+	aoc.MapLines(input, func(line string) error {
+		if isNice2(line) {
+			count++
+		}
+		return nil
+	})
+
+	return fmt.Sprintf("%d", count)
+}
+
+func isNice2(s string) bool {
+	// as go's regex engine doesn't support backreferences we will
+	// do this the "hard" way.
+	// a non-overlapping "pair" of letters that matches
+	// a [letter, any, letter] combo
+
+	l := len(s)
+	var has_xyx bool
+	var has_double bool
+	//fmt.Println("string:", s)
+	for i := 0; i < l; i++ {
+		if !has_xyx && i < l-2 {
+			//		fmt.Println("testing:", s[i], "==", s[i+2])
+			if s[i] == s[i+2] {
+				has_xyx = true
+			}
+		}
+		if !has_double && i < l-3 {
+			//		fmt.Println("testing:", s[i+2:], "contains", s[i:i+2])
+			if strings.Contains(s[i+2:], s[i:i+2]) {
+				has_double = true
+			}
+		}
+	}
+	//fmt.Printf("%q (has_double:%v, has_xyx:%v)\n", s, has_double, has_xyx)
+	return has_double && has_xyx
 }

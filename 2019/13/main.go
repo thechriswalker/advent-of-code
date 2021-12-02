@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"../intcode"
+	"github.com/thechriswalker/advent-of-code/2019/intcode"
 	"github.com/thechriswalker/advent-of-code/aoc"
 )
 

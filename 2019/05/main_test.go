@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"../intcode"
+	"github.com/thechriswalker/advent-of-code/2019/intcode"
 )
 
 // tests for the AdventOfCode 2019 day 5 solutions
@@ -50,8 +50,8 @@ var problem2cases = []Case{
 func TestProblem2(t *testing.T) {
 	for _, c := range problem2cases {
 		p := intcode.New(c.Program)
-		p.EnqueueInput(c.Input)
 		p.RunAsync()
+		p.Input <- func() int64 { return c.Input }
 		actual := p.GetOutput()
 		if c.Expected != actual {
 			t.Fatalf("Expected: '%d', Actual: '%d'", c.Expected, actual)

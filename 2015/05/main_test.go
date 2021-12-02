@@ -32,7 +32,11 @@ func TestProblem1(t *testing.T) {
 
 var problem2cases = []Case{
 	// cases here
-	{"", ""},
+	// 	{`qjhvhtzxzqqjkmpb
+	// xxyxx
+	// uurcxstgmygtbstg
+	// ieodomkazucvgmuy
+	// `, "2"},
 }
 
 func TestProblem2(t *testing.T) {

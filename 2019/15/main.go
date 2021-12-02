@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"../intcode"
+	"github.com/thechriswalker/advent-of-code/2019/intcode"
 	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
@@ -53,10 +53,10 @@ type Tile byte
 
 const (
 	unknown Tile = '.'
-	wall         = '#'
-	empty        = ' '
-	start        = '*'
-	oxygen       = 'O'
+	wall    Tile = '#'
+	empty   Tile = ' '
+	start   Tile = '*'
+	oxygen  Tile = 'O'
 )
 
 type Maze struct {
@@ -184,10 +184,10 @@ type Direction int64
 
 const (
 	nowhere Direction = 0
-	north             = 1 // negative x
-	south             = 2 // positive x
-	west              = 3 // negative y
-	east              = 4 // postive y
+	north   Direction = 1 // negative x
+	south   Direction = 2 // positive x
+	west    Direction = 3 // negative y
+	east    Direction = 4 // postive y
 )
 
 func reverse(d Direction) Direction {

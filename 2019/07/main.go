@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"../intcode"
+	"github.com/thechriswalker/advent-of-code/2019/intcode"
 
 	"github.com/thechriswalker/advent-of-code/aoc"
 )
@@ -18,7 +18,7 @@ func solve1(input string) string {
 	p := intcode.New(input)
 	// find the best order of the 5 number,
 	// this is combinations. super naive implementation.
-	max := 0
+	max := int64(0)
 	// 0,1,2,3,4
 	// for a := 0; a < 5; a++ {
 	// 	for b := 0; b < 5; b++ {
@@ -46,21 +46,25 @@ func solve1(input string) string {
 	// 		}
 	// 	}
 	//}
-	for _, s := range combinations([]int{4, 3, 2, 1, 0}) {
-		//	log.Printf("order: %v\n", s)
-		if output := amplify(p, s); output > max {
-			max = output
-		}
-	}
+	for _, s := range combinations([]int64{4, 3, 2, 1, 0}) {
+		//
+		output := amplify(p, s)
+		//log.Printf("order: %v: %d\n", s, output)
 
+		if output > max {
+			max = output
+
+		}
+		//return fmt.Sprintf("%d", max)
+	}
 	return fmt.Sprintf("%d", max)
 }
 
 // Implement Solution to Problem 2
 func solve2(input string) string {
 	p := intcode.New(input)
-	max := 0
-	for _, s := range combinations([]int{5, 6, 7, 8, 9}) {
+	max := int64(0)
+	for _, s := range combinations([]int64{5, 6, 7, 8, 9}) {
 		if output := amplify2(p, s); output > max {
 			max = output
 		}
@@ -70,42 +74,44 @@ func solve2(input string) string {
 
 // produce all combinations of a given set of ints.
 // needed for problem 2, as the thing is bigger
-func combinations(options []int) [][]int {
-	all := [][]int{}
-	var recur func(a, b []int)
-	recur = func(base, rem []int) {
+func combinations(options []int64) [][]int64 {
+	all := [][]int64{}
+	var recur func(a, b []int64)
+	recur = func(base, rem []int64) {
 		if len(rem) == 0 {
 			all = append(all, base)
 		}
 		//log.Printf("base: %v, remaining: %v\n", base, rem)
 		for i := range rem {
-			nextBase := make([]int, len(base)+1)
+			nextBase := make([]int64, len(base)+1)
 			copy(nextBase, base)
 			// pick i
 			nextBase[len(base)] = rem[i]
 			// create the next remainder.
 			if len(rem) == 1 {
-				recur(nextBase, []int{})
+				recur(nextBase, []int64{})
 			} else {
-				nextRem := make([]int, len(rem)-1)
+				nextRem := make([]int64, len(rem)-1)
 				copy(nextRem, rem[:i])
 				copy(nextRem[i:], rem[i+1:])
 				recur(nextBase, nextRem)
 			}
 		}
 	}
-	recur([]int{}, options)
+	recur([]int64{}, options)
 	return all
 }
 
-func amplify(p *intcode.Program, order []int) int {
-
+func amplify(p *intcode.Program, order []int64) int64 {
 	// clone before each run.
-	output := 0
+	output := int64(0)
 	for _, i := range order {
 		pi := p.Copy()
-		pi.EnqueueInput(i, output)
-		done := pi.RunAsync(false)
+		//pi.Debug = true
+		pi.ID = fmt.Sprintf("amp:%d", i)
+		done := pi.RunAsync()
+		pi.Input <- func() int64 { return i }
+		pi.Input <- func() int64 { return output }
 		output = pi.GetOutput()
 		<-done
 	}
@@ -114,17 +120,18 @@ func amplify(p *intcode.Program, order []int) int {
 
 // in this version we have to initialise 5 machines and keep feeding them input
 // without resetting their memory...
-func amplify2(p *intcode.Program, order []int) int {
+func amplify2(p *intcode.Program, order []int64) int64 {
 	amps := make([]*intcode.Program, len(order))
 	var wg sync.WaitGroup
 
-	output := 0
+	output := int64(0)
 
 	for i, v := range order {
 		amp := p.Copy()
+		amp.ID = fmt.Sprintf("amp:%d", v)
 		amps[i] = amp
-		amp.RunAsync(false)
-		amp.Input <- v
+		amp.RunAsync()
+		amp.Input <- func() int64 { return v }
 		wg.Add(1)
 		go func(idx int) {
 			for {
@@ -137,16 +144,19 @@ func amplify2(p *intcode.Program, order []int) int {
 					output = out
 					// each amp feeds into the next amp, unless that one halts first
 					next := amps[(idx+1)%len(order)]
-					select {
 					// either wait for halt OR send output on.
+					// we cannot do this now...
+					// how we see if this is waiting for input.
+					// I need a block until input used.
+					select {
 					case <-next.Halted:
-					case next.Input <- out:
+					case next.Input <- func() int64 { return out }:
 					}
 				}
 			}
 		}(i)
 	}
-	amps[0].Input <- 0 // start the first amp.
+	amps[0].Input <- func() int64 { return 0 } // start the first amp.
 	wg.Wait()
 	return output
 }

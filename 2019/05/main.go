@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"../intcode"
+	"github.com/thechriswalker/advent-of-code/2019/intcode"
 	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
@@ -14,8 +14,8 @@ func main() {
 // Implement Solution to Problem 1
 func solve1(input string) string {
 	p := intcode.New(input)
-	p.EnqueueInput(1)
 	done := p.RunAsync()
+	p.Input <- func() int64 { return 1 }
 	var lastOutput int64
 	cont := true
 	for cont {
@@ -33,7 +33,7 @@ func solve1(input string) string {
 // Implement Solution to Problem 2
 func solve2(input string) string {
 	p := intcode.New(input)
-	p.EnqueueInput(5)
 	p.RunAsync()
+	p.Input <- func() int64 { return 5 }
 	return fmt.Sprintf("%d", p.GetOutput())
 }

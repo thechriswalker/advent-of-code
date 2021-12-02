@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"../intcode"
+	"github.com/thechriswalker/advent-of-code/2019/intcode"
 	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
@@ -199,11 +199,11 @@ func (m *Map) FindIntersections() [][2]int {
 
 func (m *Map) String() string {
 	sb := strings.Builder{}
-	m.WriteTo(&sb)
+	m.WriteInto(&sb)
 	return sb.String()
 }
 
-func (m *Map) WriteTo(w io.Writer) {
+func (m *Map) WriteInto(w io.Writer) {
 	for y := 0; y <= m.ymax; y++ {
 		for x := 0; x <= m.xmax; x++ {
 			c := m.data[[2]int{x, y}]

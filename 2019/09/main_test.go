@@ -1,7 +1,7 @@
 package main
 
 import (
-	"../intcode"
+	"github.com/thechriswalker/advent-of-code/2019/intcode"
 
 	"testing"
 )
@@ -22,15 +22,15 @@ var problem1cases = []Case{
 
 func TestProblem1(t *testing.T) {
 	for _, c := range problem1cases {
-		actual := solve1(c.In)
+		actual := runForOneOutput(c.In)
 		if c.Out != actual {
 			t.Fatalf("Expected: '%s', Actual: '%s'", c.Out, actual)
 		}
 	}
 	// test opcode 203 which is failing.
 	p := intcode.New("109,1,203,0,4,0,4,1,99")
-	p.EnqueueInput(999)
 	done := p.RunAsync()
+	p.NextInput(999)
 	if x := <-p.Output; x != 109 {
 		t.Fatalf("Expected: '%d', Actual: '%d'", 109, x)
 	}
