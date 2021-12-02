@@ -80,7 +80,6 @@ func solve2(input string) string {
 		}
 	}
 	return fmt.Sprintf("%d", sum)
-	return "<unsolved>"
 }
 
 var validators = map[string]func(string) bool{
