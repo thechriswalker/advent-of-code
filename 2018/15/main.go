@@ -29,7 +29,7 @@ const (
 type Tile struct {
 	Kind   byte
 	AP, HP int
-	Index int
+	Index  int
 }
 
 func (t *Tile) IsEmpty() bool {
@@ -103,6 +103,7 @@ func (c *Cavern) Tick() bool {
 
 	for _, t := range order {
 		// can we attack
-		if t.
+		panic("unfinished! " + string(t.Kind))
 	}
+	return false
 }
