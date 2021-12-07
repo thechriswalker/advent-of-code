@@ -113,7 +113,9 @@ func createFiles(p Problem, basePath string) error {
 					})
 					res, err := http.DefaultClient.Do(req)
 					if err != nil {
-						log.Println("Failed to fetch input data. Bad cookie? %w", err)
+						log.Printf("Failed to fetch input data. Bad cookie? %w\n", err)
+					} else if res.StatusCode != http.StatusOK {
+						log.Printf("Failed to fetch input data. Bad cookie? (status:%d)\n", res.StatusCode)
 					} else {
 						io.Copy(file, res.Body)
 						res.Body.Close()
