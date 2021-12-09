@@ -26,3 +26,10 @@ func ToIntSlice(input string, sep rune) []int {
 	}
 	return nn
 }
+
+func GridIndex(x, y, stride, height int) int {
+	if x < 0 || x >= height || y < 0 || y >= stride {
+		return -1
+	}
+	return x*stride + y
+}
