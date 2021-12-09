@@ -30,16 +30,18 @@ func main() {
 	prob := Problem{}
 	var runOnlyTests bool
 	var fetchProgress bool
+	var refresh string
 	flag.BoolVar(&runOnlyTests, "test-only", false, "run only tests")
 	flag.IntVar(&prob.Year, "year", time.Now().Year(), "the year")
 	flag.IntVar(&prob.Day, "day", time.Now().Day(), "the day of december")
-	flag.BoolVar(&fetchProgress, "progress", false, "fetch/update/view progress")
+	flag.BoolVar(&fetchProgress, "progress", false, "fetch/refresh/view progress")
+	flag.StringVar(&refresh, "refresh", "", "comma-separated years to refresh")
 	flag.Parse()
 
 	if fetchProgress {
 		//log.Println("Checking Progress...")
 		aoc.PrintHeader(0, 0)
-		checkProgress()
+		checkProgress(refresh)
 		return
 	}
 	basePath := fmt.Sprintf("%d/%02d", prob.Year, prob.Day)
@@ -206,7 +208,20 @@ var readmeTpl = template.Must(template.New("test").Parse(`# Advent of Code {{.Ye
 ...
 `))
 
-func checkProgress() {
+func checkProgress(refresh string) {
+	yearsToRefresh := []int{}
+	refreshAll := refresh == "all"
+	if refresh != "" && !refreshAll {
+		for _, y := range strings.Split(refresh, ",") {
+			if n, err := strconv.Atoi(y); err == nil {
+				yearsToRefresh = append(yearsToRefresh, n)
+			} else {
+				panic("Bad Year in -refresh arg: " + y)
+			}
+
+		}
+
+	}
 	// we need a cookie
 	cookie, err := ioutil.ReadFile(".aoc-cookie")
 	if err != nil {
@@ -231,16 +246,32 @@ func checkProgress() {
 		file := fmt.Sprintf("./%d/.progress.json", year)
 		f, err := os.Open(file)
 		progress := &YearProgress{}
-		if err != nil {
+		// load new
+		load := refreshAll || contains(year, yearsToRefresh) || err != nil
+		if !load {
+			// try and read.
+			if err := json.NewDecoder(f).Decode(progress); err != nil {
+				// failed to read, try and load again.
+				load = true
+			}
+			f.Close()
+		}
+		if load {
 			// that's OK, just load it new
 			progress = loadAndSaveProgress(year, file, strings.TrimSpace(string(cookie)))
-		} else {
-			json.NewDecoder(f).Decode(progress)
-			f.Close()
 		}
 		// now just need a pretty way to display the data in a table.
 		fmt.Printf("%s", progress)
 	}
+}
+
+func contains(needle int, haystack []int) bool {
+	for _, i := range haystack {
+		if i == needle {
+			return true
+		}
+	}
+	return false
 }
 
 func loadAndSaveProgress(year int, file, cookie string) *YearProgress {

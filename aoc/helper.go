@@ -33,3 +33,9 @@ func GridIndex(x, y, stride, height int) int {
 	}
 	return x*stride + y
 }
+
+func GridCoords(idx, stride int) (x, y int) {
+	x = idx / stride
+	y = idx % stride
+	return
+}
