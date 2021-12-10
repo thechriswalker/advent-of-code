@@ -12,7 +12,7 @@ An Intcode program, the **Aft Scaffolding Control and Information Interface** (A
 
 Running the ASCII program on your Intcode computer will provide the current view of the scaffolds. This is output, _purely coincidentally_, as ASCII code: `35` means `#`, `46` means `.`, `10` starts a new line of output below the current one, and so on. (Within a line, characters are drawn left-to-right.)
 
-In the camera output, `#` represents a scaffold and . represents open space. The vacuum robot is visible as `^`, `v`, `<`, or `>` depending on whether it is facing up, down, left, or right respectively. When drawn like this, the vacuum robot is always on a scaffold; if the vacuum robot ever walks off of a scaffold and begins tumbling through space uncontrollably, it will instead be visible as `X`.
+In the camera output, `#` represents a scaffold and `.` represents open space. The vacuum robot is visible as `^`, `v`, `<`, or `>` depending on whether it is facing up, down, left, or right respectively. When drawn like this, the vacuum robot is always on a scaffold; if the vacuum robot ever walks off of a scaffold and begins tumbling through space uncontrollably, it will instead be visible as `X`.
 
 In general, the scaffold forms a path, but it sometimes loops back onto itself. For example, suppose you can see the following view from the cameras:
 

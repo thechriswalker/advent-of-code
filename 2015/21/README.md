@@ -1,7 +1,16 @@
-# Advent of Code 2015 day 21
+# Advent of Code 2015 day 21: RPG Simulator 20XX ---
+
+## Comments
+
+This was quite fun as I saw the problem on my phone, away from a code editor. However, the info in the input -- specifically the HP=100 -- meant that the answer was possible to work out in my head.
+
+As the HP was equal, and we go first, we only have to deal as much damage as we take. So the boss inflicts: `BossDamage - MyArmor` and I inflict `MyDamage - BossArmor` the equality of these two can
+be rearranged as `BossDamage + BossArmor = MyDamage + MyArmor`, so to win I need any combination of damage and armor as long as it adds up to the bosses (in my case `10`).
+
+After that it was quite easy to simply look at the inventory and work out how this would be minimised, and for part 2 to lose I need `9` or less, but for the most gold: same process.
 
 ## Problem 1
-: RPG Simulator 20XX ---
+
 Little Henry Case got a new video game for Christmas. It's an RPG, and he's stuck on a boss. He needs to know what equipment to buy at the shop. He hands you the controller.
 
 In this game, the player (you) and the enemy (the boss) take turns attacking. The player always goes first. Each attack reduces the opponent's hit points by at least 1. The first character at or below 0 hit points loses.

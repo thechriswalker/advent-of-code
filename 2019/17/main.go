@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"time"
 
 	"github.com/thechriswalker/advent-of-code/2019/intcode"
 	"github.com/thechriswalker/advent-of-code/aoc"
@@ -21,9 +20,9 @@ func solve1(input string) string {
 	sum := 0
 	for _, inter := range m.FindIntersections() {
 		sum += inter[0] * inter[1]
-		fmt.Println(inter, "alignment", inter[0]*inter[1], "sum", sum)
+		//fmt.Println(inter, "alignment", inter[0]*inter[1], "sum", sum)
 	}
-	fmt.Print(m)
+	//fmt.Print(m)
 
 	return fmt.Sprint(sum)
 }
@@ -56,14 +55,17 @@ func explore(code string) *Map {
 
 // Implement Solution to Problem 2
 func solve2(input string) string {
-	//m := explore(input)
-
-	//fmt.Print(m)
-
-	//p := m.WalkAll()
-
-	//fmt.Println(string(p))
 	/*
+		m := explore(input)
+		fmt.Print(m)
+		p := m.WalkAll()
+		fmt.Println(string(p))
+	*/
+	/*
+		The output from the WalkAll was:
+
+		R,10,R,10,R,6,R,4,R,10,R,10,L,4,R,10,R,10,R,6,R,4,R,4,L,4,L,10,L,10,R,10,R,10,R,6,R,4,R,10,R,10,L,4,R,4,L,4,L,10,L,10,R,10,R,10,L,4,R,4,L,4,L,10,L,10,R,10,R,10,L,4,
+
 		I manually chopped up the string.
 		It's some sort of maximum matching substring algorithm for the
 		general solution, but it was easy enough to do by hand.
@@ -86,7 +88,6 @@ func solve2(input string) string {
 	R := []byte("A,B,A,C,A,B,C,B,C,B\n")
 
 	ch := make(chan int64)
-	ready := false
 	go func() {
 		// Main:
 		for _, r := range R {
@@ -106,8 +107,8 @@ func solve2(input string) string {
 		}
 		// continuous video feed?
 		ch <- int64('n')
-		ready = true
 		ch <- int64('\n')
+		// all input given
 	}()
 
 	feeder := func() int64 {
@@ -118,9 +119,6 @@ func solve2(input string) string {
 	pg.Set(0, 2)
 	done := pg.RunAsync()
 	halt := false
-	//var result int64
-	var b bytes.Buffer
-	var prev byte
 	var result int64
 	for {
 		select {
@@ -129,20 +127,6 @@ func solve2(input string) string {
 		case c := <-pg.Output:
 			// the result! (maybe)
 			result = c
-			// after every 2 newlines, print.
-			if ready {
-				if prev == '\n' && byte(c) == '\n' {
-					fmt.Println("\x1b[2J", b.String())
-					b.Reset()
-					// pause to animate
-					time.Sleep(20 * time.Millisecond)
-					prev = ' '
-				} else {
-					prev = byte(c)
-					b.WriteByte(prev)
-				}
-
-			}
 		case <-done:
 			halt = true
 		}
