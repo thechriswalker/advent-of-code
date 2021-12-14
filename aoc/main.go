@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func PrintHeader(year, day int) {
@@ -32,6 +33,22 @@ func PrintHeader(year, day int) {
 	fmt.Println()
 }
 
+func timeAndPrint(fn func(in string) string, input string) {
+	t := time.Now()
+	s := fn(input)
+	d := time.Since(t)
+	// default red
+	c := 31
+	if d < time.Second {
+		// less than a second, green
+		c = 32
+	} else if d < 15*time.Second {
+		// less than 15 seconds, ok... yellow
+		c = 93
+	}
+	fmt.Printf("\x1b[1;37m%s\x1b[0m \x1b[%dm%v\x1b[0m\n", s, c, d)
+}
+
 func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 	var testsOnly = flag.Bool("test-only", false, "Only run the tests")
 	flag.Parse()
@@ -50,14 +67,14 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 			log.Fatalln("Please add your problem input to 'input.txt'")
 		}
 		input = string(b)
-
 		fmt.Print("Solving problem 1: ")
-		fmt.Println(solve1(input))
+		timeAndPrint(solve1, input)
+
 	}
 	runTest(2)
 	if !*testsOnly {
 		fmt.Print("Solving problem 2: ")
-		fmt.Println(solve2(input))
+		timeAndPrint(solve2, input)
 	}
 }
 
@@ -65,9 +82,9 @@ func runTest(n int) {
 	fmt.Printf("Testing problem %d: ", n)
 	output, err := exec.Command("go", "test", "-run", fmt.Sprintf("^TestProblem%d$", n)).CombinedOutput()
 	if err != nil {
-		fmt.Println("FAIL")
+		fmt.Println("\x1b[1;31mFAIL\x1b[0m")
 		os.Stdout.Write(output)
 		os.Exit(1)
 	}
-	fmt.Println("PASS")
+	fmt.Println("\x1b[1;32mPASS\x1b[0m")
 }
