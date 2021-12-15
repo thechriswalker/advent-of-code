@@ -19,7 +19,9 @@ func main() {
 // Implement Solution to Problem 1
 func solve1(input string) string {
 	m := &Maze{
-		data: map[[2]int]Tile{[2]int{0, 0}: start},
+		data: map[[2]int]Tile{
+			{0, 0}: start,
+		},
 	}
 	a, _ := os.LookupEnv("AOC_ANIMATE")
 	ms, _ := strconv.Atoi(a)
