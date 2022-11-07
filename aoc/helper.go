@@ -65,6 +65,16 @@ func FprintByteGrid(w io.Writer, g ByteGrid, hilite map[byte]string) {
 	}
 }
 
+func IterateByteGrid(g ByteGrid, f func(x, y int, b byte)) {
+	x1, y1, x2, y2 := g.Bounds()
+	for y := y1; y <= y2; y++ {
+		for x := x1; x <= x2; x++ {
+			b, _ := g.At(x, y)
+			f(x, y, b)
+		}
+	}
+}
+
 type FixedByteGrid struct {
 	w, h    int
 	data    []byte
@@ -120,6 +130,12 @@ func NewSparseByteGrid(unknown byte) *SparseByteGrid {
 		data:    map[[2]int]byte{},
 		unknown: unknown,
 	}
+}
+
+func (g *SparseByteGrid) Populate(other ByteGrid) {
+	IterateByteGrid(other, func(x, y int, b byte) {
+		g.Set(x, y, b)
+	})
 }
 
 func (g *SparseByteGrid) At(x, y int) (byte, bool) {
