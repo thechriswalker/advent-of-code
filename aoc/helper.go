@@ -171,10 +171,10 @@ func (g *SparseByteGrid) Set(x, y int, b byte) bool {
 }
 
 func GridIndex(x, y, stride, height int) int {
-	if x < 0 || x >= height || y < 0 || y >= stride {
+	if x < 0 || x >= stride || y < 0 || y >= height {
 		return -1
 	}
-	return x*stride + y
+	return y*stride + x
 }
 
 func GridCoords(idx, stride int) (x, y int) {
