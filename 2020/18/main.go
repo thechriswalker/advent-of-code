@@ -87,7 +87,7 @@ func solve2(input string) string {
 	for _, line := range lines {
 		if line != "" {
 			line = strings.ReplaceAll(line, " ", "")
-			fmt.Println("Expr:", line)
+			//	fmt.Println("Expr:", line)
 			sum += eval2(strings.NewReader(line), "#", breakOnEOF)
 		}
 	}
@@ -152,22 +152,22 @@ func eval2(rd *strings.Reader, depth string, brk breaker) int {
 
 		switch op {
 		case '+':
-			if value != 0 {
-				fmt.Printf("%sEVAL(%d + %d) = %d\n", depth, value, nextValue, value+nextValue)
-			}
+			// if value != 0 {
+			// 	fmt.Printf("%sEVAL(%d + %d) = %d\n", depth, value, nextValue, value+nextValue)
+			// }
 			value += nextValue
 
 		case '*':
-			if value != 0 {
-				fmt.Printf("%sEVAL(%d * %d) = %d\n", depth, value, nextValue, value*nextValue)
-			}
+			// if value != 0 {
+			// 	fmt.Printf("%sEVAL(%d * %d) = %d\n", depth, value, nextValue, value*nextValue)
+			// }
 			value *= nextValue
 		default:
 			panic("bad op")
 		}
 		if err != nil {
 			if err == io.EOF {
-				fmt.Printf("%sEXPR: %d\n", depth, value)
+				// fmt.Printf("%sEXPR: %d\n", depth, value)
 				return value
 			}
 			panic(err)
@@ -176,7 +176,7 @@ func eval2(rd *strings.Reader, depth string, brk breaker) int {
 			if brk != breakOnParen {
 				rd.UnreadByte()
 			}
-			fmt.Printf("%sEXPR: %d\n", depth, value)
+			// fmt.Printf("%sEXPR: %d\n", depth, value)
 			return value
 		}
 
@@ -188,7 +188,7 @@ func eval2(rd *strings.Reader, depth string, brk breaker) int {
 		}
 		if op == '*' && brk == breakOnMultiply {
 			rd.UnreadByte()
-			fmt.Printf("%sEXPR: %d\n", depth, value)
+			//	fmt.Printf("%sEXPR: %d\n", depth, value)
 			return value
 		}
 		//fmt.Printf("%snext op=%c, current value=%d\n", depth, op, value)

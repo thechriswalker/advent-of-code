@@ -178,7 +178,7 @@ func GridIndex(x, y, stride, height int) int {
 }
 
 func GridCoords(idx, stride int) (x, y int) {
-	x = idx / stride
-	y = idx % stride
+	x = idx % stride
+	y = idx / stride
 	return
 }

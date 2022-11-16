@@ -14,7 +14,7 @@ func main() {
 // Implement Solution to Problem 1
 func solve1(input string) string {
 	grid := parseInput(input)
-	fmt.Println(grid)
+	//fmt.Println(grid)
 
 	// looking at the grid I guessed the order.
 	// var ProblemOneOrder = []byte{'0', '4', '5', '6', '7', '3', '1', '2'}
@@ -80,7 +80,7 @@ func solve1(input string) string {
 		}
 	}
 	grid.AddPath(min.Path)
-	fmt.Println(grid)
+	//fmt.Println(grid)
 
 	return fmt.Sprintf("%d", min.Distance)
 }
@@ -188,7 +188,7 @@ func solve2(input string) string {
 		}
 	}
 	grid.AddPath(min.Path)
-	fmt.Println(grid)
+	//fmt.Println(grid)
 
 	return fmt.Sprintf("%d", min.Distance)
 }

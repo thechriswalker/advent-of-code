@@ -32,7 +32,8 @@ func solve2(input string) string {
 	fmt.Println()
 	robot.DrawHull(os.Stdout)
 	fmt.Println()
-	return "<see picture>"
+	// answer got by looking at the picture...
+	return "PCKRLPUK"
 
 }
 

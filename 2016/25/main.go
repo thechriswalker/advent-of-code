@@ -25,7 +25,7 @@ func solve1(input string) string {
 
 // Implement Solution to Problem 2
 func solve2(input string) string {
-	return "<unsolved>"
+	return ""
 }
 
 // fixed width op makes life easier

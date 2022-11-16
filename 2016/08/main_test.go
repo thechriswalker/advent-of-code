@@ -47,7 +47,7 @@ func TestProblem2(t *testing.T) {
 	Height = 3
 	Space = '.'
 	for _, c := range problem2cases {
-		actual := solve2(c.In)
+		actual := solve2raw(c.In)
 		if c.Out != actual {
 			t.Fatalf("Expected: '%s', Actual: '%s'", c.Out, actual)
 		}

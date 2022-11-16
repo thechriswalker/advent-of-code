@@ -148,5 +148,6 @@ func solve2(input string) string {
 	fmt.Println()
 	p.Print()
 
-	return "^"
+	// obtained by reading the above...
+	return "ABKJFBGC"
 }

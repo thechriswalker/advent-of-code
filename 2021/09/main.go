@@ -94,8 +94,8 @@ func solve1(input string) string {
 	// need to count ALL, the points as those adjacent to a low point
 	// AREN'T by definition.
 	sum := 0
-	for x := 0; x < g.Height; x++ {
-		for y := 0; y < g.Stride; y++ {
+	for y := 0; y < g.Height; y++ {
+		for x := 0; x < g.Stride; x++ {
 			if n, ok := g.IsLowPoint(x, y); ok {
 				sum += 1 + n
 			}
@@ -120,8 +120,8 @@ func solve2(input string) string {
 	// need to count ALL, the points as those adjacent to a low point
 	// AREN'T by definition.
 	basins := []int{}
-	for x := 0; x < g.Height; x++ {
-		for y := 0; y < g.Stride; y++ {
+	for y := 0; y < g.Height; y++ {
+		for x := 0; x < g.Stride; x++ {
 			b := g.BasinSize(x, y)
 			if b > 0 {
 				basins = append(basins, b)

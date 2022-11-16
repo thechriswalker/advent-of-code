@@ -15,13 +15,15 @@ func main() {
 // Implement Solution to Problem 1
 func solve1(input string) string {
 	list := parseInput(input)
-	//find the lowest unblocked ip.
+	// find the lowest unblocked ip.
+	// they are sorted by start port.
+	// so the highest blocked port is the high value
 	// we iterate the list until the next low port
 	// leaves a gap from the current highest port
-	//	fmt.Println(list)
+	// /	fmt.Println(list)
 	var high uint32
 	for _, r := range list {
-		if r[0]-high > 0 {
+		if r[0] > high+1 {
 			// we found it
 			break
 		}
@@ -75,7 +77,7 @@ func parseInput(input string) List {
 		l = append(l, [2]uint32{s, f})
 	}
 	// this is important for our algorithm.
-	// have the list sorted by star port.
+	// have the list sorted by start port.
 	sort.Sort(l)
 	return l
 }

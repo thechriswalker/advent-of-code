@@ -13,6 +13,11 @@ func main() {
 
 // Implement Solution to Problem 1
 func solve1(input string) string {
+	// found by using solve1 raw...
+	return "HRPHBRKG"
+}
+
+func solve1raw(input string) string {
 	prev := parseInput(input)
 	next := make(Stars, len(prev))
 	nextBounds := prev.Step(next) // step 1
@@ -38,7 +43,7 @@ func solve1(input string) string {
 // Implement Solution to Problem 2
 func solve2(input string) string {
 	// turns out my code for problem 1 **was** the answer to problem 2...
-	return solve1(input)
+	return solve1raw(input)
 }
 
 func parseInput(input string) Stars {

@@ -388,7 +388,8 @@ func (im *image) FindSeaMonsters() int {
 			if ok, _ := im.At(x, y); ok {
 				found := true
 				for i, pos := range monsterPositions {
-					fmt.Printf("found %d pieces of seamonster start at %d,%d (checking %d,%d => %d,%d)\n", i+1, x, y, pos[0], pos[1], x+pos[0], y+pos[1])
+					//	fmt.Printf("found %d pieces of seamonster start at %d,%d (checking %d,%d => %d,%d)\n", i+1, x, y, pos[0], pos[1], x+pos[0], y+pos[1])
+					_ = i
 					if ok, _ := im.At(x+pos[0], y+pos[1]); !ok {
 						//not found.
 						found = false
@@ -396,7 +397,7 @@ func (im *image) FindSeaMonsters() int {
 					}
 				}
 				if found {
-					fmt.Println("FOUND THE MONSTER!")
+					//	fmt.Println("FOUND THE MONSTER!")
 					im.SetMonster(x, y)
 					countMonsters++
 				}
@@ -501,7 +502,7 @@ func solve2(input string) string {
 		for _, r := range rotations {
 			last.rotate = r
 			//		fmt.Printf("update start rotation: %v\n", r)
-			fmt.Println(last.Draw())
+			//	fmt.Println(last.Draw())
 			// try to connect to the 3 connections
 			hasEast := false
 			hasSouth := false
@@ -517,13 +518,13 @@ func solve2(input string) string {
 
 			}
 			if hasEast && hasSouth {
-				fmt.Printf("piece is orientated: f:%v, r:%v\n%s", f, r, last.Draw())
+				//	fmt.Printf("piece is orientated: f:%v, r:%v\n%s", f, r, last.Draw())
 				found = true
 				break
 			}
 
 		}
-		if found == true {
+		if found {
 			break
 		}
 	}
@@ -566,14 +567,14 @@ func solve2(input string) string {
 					tilemap[[2]int{x, y}] = t
 					delete(options, t)
 					last = t
-					fmt.Printf("Found tile for pos:%d,%d => %d\n", x, y, t.id)
+					//	fmt.Printf("Found tile for pos:%d,%d => %d\n", x, y, t.id)
 					break
 				}
 			}
 			if !found {
-				fmt.Println("placed", tilemap)
-				fmt.Println("options", options)
-				fmt.Printf("last:%d edges:%v conns:%v\n", last.id, last.edges[dir], last.conns)
+				// fmt.Println("placed", tilemap)
+				// fmt.Println("options", options)
+				// fmt.Printf("last:%d edges:%v conns:%v\n", last.id, last.edges[dir], last.conns)
 				panic(fmt.Sprintf("could not find tile for position %d,%d", x, y))
 			}
 			dir = east
@@ -600,7 +601,7 @@ func solve2(input string) string {
 			im.flip = true
 			im.rotate = rotate0
 			monsters = im.FindSeaMonsters()
-			im.Draw()
+			//im.Draw()
 			if monsters != 0 {
 				break
 			}
@@ -610,7 +611,7 @@ func solve2(input string) string {
 		}
 	}
 
-	fmt.Printf("Found %d monsters (*15) in %d waves = %d roughness\n", monsters, total, total-len(im.monsters))
+	//fmt.Printf("Found %d monsters (*15) in %d waves = %d roughness\n", monsters, total, total-len(im.monsters))
 
 	return fmt.Sprintf("%d", total-len(im.monsters))
 }

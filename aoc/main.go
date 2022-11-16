@@ -3,6 +3,7 @@ package aoc
 import (
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -33,9 +34,10 @@ func PrintHeader(year, day int) {
 	fmt.Println()
 }
 
-func timeAndPrint(fn func(in string) string, input string) {
+func timeAndPrint(fn func(in string) string, input string, answers io.Writer) {
 	t := time.Now()
 	s := fn(input)
+	fmt.Fprintln(answers, s)
 	d := time.Since(t)
 	// default red
 	c := 31
@@ -49,32 +51,90 @@ func timeAndPrint(fn func(in string) string, input string) {
 	fmt.Printf("\x1b[1;37m%s\x1b[0m \x1b[%dm%v\x1b[0m\n", s, c, d)
 }
 
+func SupressOutput() func() {
+	stdout := os.Stdout
+	stderr := os.Stdin
+	devnull, _ := os.Open(os.DevNull)
+	os.Stdout = devnull
+	os.Stderr = devnull
+	return func() {
+		os.Stdout = stdout
+		os.Stderr = stderr
+	}
+}
+
+// if we have the environment variable for check answers
+// --check-answers=1:abc
 func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
-	var testsOnly = flag.Bool("test-only", false, "Only run the tests")
+	testsOnly := flag.Bool("test-only", false, "Only run the tests")
+	answersCheck := flag.Bool("check-answers", false, "Check Solutions against know answers")
+	recordAnswers := flag.Bool("record-answers", false, "Save current answers as correct")
+
+	var input string
+	getInput := func() string {
+		if input == "" {
+			b, err := ioutil.ReadFile("input.txt")
+			if err != nil {
+				if os.IsNotExist(err) {
+					log.Fatalln("Please create 'input.txt' with your problem input")
+				}
+				log.Fatalln("Error trying to read input file ('input.txt'):", err)
+			}
+			if len(b) == 0 {
+				log.Fatalln("Please add your problem input to 'input.txt'")
+			}
+			input = string(b)
+		}
+		return input
+	}
+
 	flag.Parse()
+	if *answersCheck {
+		fails := 100
+		in := getInput()
+		answer1, answer2 := readAnswers(YEAR, DAY)
+		// we really want to suppress stdout/stderr for this.
+		restore := SupressOutput()
+		result1 := solve1(in)
+		result2 := solve2(in)
+		restore()
+		fmt.Printf("%d-%02d Part 1: ", YEAR, DAY)
+		if result1 == answer1 {
+			fmt.Println("\x1b[1;32mPASS\x1b[0m")
+		} else {
+			fails++
+			fmt.Printf("\x1b[1;31mFAIL\x1b[0m (expected %q, got %q)\n", answer1, result1)
+		}
+		fmt.Printf("%d-%02d Part 2: ", YEAR, DAY)
+		if result2 == answer2 {
+			fmt.Println("\x1b[1;32mPASS\x1b[0m")
+		} else {
+			fails++
+			fmt.Printf("\x1b[1;31mFAIL\x1b[0m (expected %q, got %q)\n", answer2, result2)
+		}
+		os.Exit(fails)
+		return
+	}
+
 	PrintHeader(YEAR, DAY)
 	runTest(1)
-	var input string
-	if !*testsOnly {
-		b, err := ioutil.ReadFile("input.txt")
+	answerRecorder, _ := os.Open(os.DevNull)
+	if *recordAnswers && !*testsOnly {
+		var err error
+		answerRecorder, err = os.Create("./answers.txt")
 		if err != nil {
-			if os.IsNotExist(err) {
-				log.Fatalln("Please create 'input.txt' with your problem input")
-			}
-			log.Fatalln("Error trying to read input file ('input.txt'):", err)
+			log.Fatalln("could not open answers file for writing")
 		}
-		if len(b) == 0 {
-			log.Fatalln("Please add your problem input to 'input.txt'")
-		}
-		input = string(b)
+		defer answerRecorder.Close()
+	}
+	if !*testsOnly {
 		fmt.Print("Solving problem 1: ")
-		timeAndPrint(solve1, input)
-
+		timeAndPrint(solve1, getInput(), answerRecorder)
 	}
 	runTest(2)
 	if !*testsOnly {
 		fmt.Print("Solving problem 2: ")
-		timeAndPrint(solve2, input)
+		timeAndPrint(solve2, getInput(), answerRecorder)
 	}
 }
 
@@ -87,4 +147,26 @@ func runTest(n int) {
 		os.Exit(1)
 	}
 	fmt.Println("\x1b[1;32mPASS\x1b[0m")
+}
+
+func readAnswers(year, day int) (a1, a2 string) {
+	// assume they are in a file answers.txt
+	b, err := ioutil.ReadFile("./answers.txt")
+	if err != nil {
+		log.Fatalf("Could not open answers file at %d/%02d/answers.txt\n", year, day)
+	}
+	i := 0
+	MapLines(string(b), func(line string) error {
+		switch i {
+		case 0:
+			a1 = line
+		case 1:
+			a2 = line
+		default:
+			log.Fatalln("More than 2 lines in answers.txt")
+		}
+		i++
+		return nil
+	})
+	return
 }

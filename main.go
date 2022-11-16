@@ -31,9 +31,13 @@ func main() {
 	var runOnlyTests bool
 	var fetchProgress bool
 	var refresh string
+	var checkAnswers bool
+	var recordAnswers bool
 	flag.BoolVar(&runOnlyTests, "test-only", false, "run only tests")
-	flag.IntVar(&prob.Year, "year", time.Now().Year(), "the year")
-	flag.IntVar(&prob.Day, "day", time.Now().Day(), "the day of december")
+	flag.BoolVar(&checkAnswers, "check-answers", false, "run answer check")
+	flag.BoolVar(&recordAnswers, "record-answers", false, "record current solutions as correct")
+	flag.IntVar(&prob.Year, "year", 0, "the year")
+	flag.IntVar(&prob.Day, "day", 0, "the day of december")
 	flag.BoolVar(&fetchProgress, "progress", false, "fetch/refresh/view progress")
 	flag.StringVar(&refresh, "refresh", "", "comma-separated years to refresh")
 	flag.Parse()
@@ -44,6 +48,20 @@ func main() {
 		checkProgress(refresh)
 		return
 	}
+	// check all if no year.day given
+	if checkAnswers && prob.Year == 0 && prob.Day == 0 {
+		checkAllAnswers()
+		return
+	}
+
+	// and now set the defaults
+	if prob.Year == 0 {
+		prob.Year = time.Now().Year()
+	}
+	if prob.Day == 0 {
+		prob.Day = time.Now().Day()
+	}
+
 	basePath := fmt.Sprintf("%d/%02d", prob.Year, prob.Day)
 	if err := os.MkdirAll(basePath, 0755); err != nil {
 		log.Fatalf("could not make directorys: %s", basePath)
@@ -69,7 +87,11 @@ func main() {
 	}
 	// file exists run it!
 	var arg3 string
-	if runOnlyTests {
+	if recordAnswers {
+		arg3 = "-record-answers=true"
+	} else if checkAnswers {
+		arg3 = "-check-answers=true"
+	} else if runOnlyTests {
 		arg3 = "-test-only=true"
 	} else {
 		arg3 = "-test-only=false"
@@ -413,4 +435,57 @@ func (yp *YearProgress) String() string {
 	// so we can just iterate!
 
 	return b.String()
+}
+
+func checkAllAnswers() {
+	// loop through all dirs.
+	// we start in 2015
+	// and go to today.
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("could not get working dir: %s", err)
+	}
+	fmt.Println("              1111111111222222")
+	fmt.Println("     1234567890123456789012345")
+	buf := &strings.Builder{}
+	for year := 2015; year <= time.Now().Year(); year++ {
+		fmt.Printf("%d ", year)
+		for day := 1; day < 26; day++ {
+			// check if we have a main.go in that folder.
+			basePath := fmt.Sprintf("%s/%d/%02d", cwd, year, day)
+			if err := os.Chdir(basePath); err != nil {
+				// probably doesn't exist.
+				continue
+			}
+			// otherwise try to run it!
+			buf.Reset()
+			run := exec.Command("go", "run", "main.go", "-check-answers=true")
+			run.Stdin = os.Stdin
+			run.Stderr = buf
+			run.Stdout = io.Discard
+			run.Run()
+			// we have to parse the exit code from the last line of stderr.
+			stderr := buf.String()
+			lines := strings.Split(strings.TrimSpace(stderr), "\n")
+			exit := 0
+
+			if len(lines) > 0 {
+				lastline := lines[len(lines)-1]
+				fmt.Sscanf(lastline, "exit status %d", &exit)
+			}
+
+			switch exit {
+			case 100: // both passed
+				fmt.Print("\x1b[1;93m*")
+			case 101: // one passed
+				fmt.Print("\x1b[1;97m*")
+			case 102: // none passed
+				fmt.Print("\x1b[1;90m*")
+			default:
+				// probably an error...
+				fmt.Print("\x1b[1;31me")
+			}
+		}
+		fmt.Print("\x1b[0m\n")
+	}
 }
