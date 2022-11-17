@@ -13,7 +13,7 @@ type Case struct {
 
 var problem1cases = []Case{
 	// cases here
-	{"", ""},
+	{"0	2	7	0\n", "5"},
 }
 
 func TestProblem1(t *testing.T) {
@@ -27,7 +27,7 @@ func TestProblem1(t *testing.T) {
 
 var problem2cases = []Case{
 	// cases here
-	{"", ""},
+	{"0	2	7	0\n", "4"},
 }
 
 func TestProblem2(t *testing.T) {

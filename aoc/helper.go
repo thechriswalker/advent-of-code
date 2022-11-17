@@ -29,6 +29,16 @@ func ToIntSlice(input string, sep rune) []int {
 	return nn
 }
 
+func ToUint8Slice(input string, sep rune) []uint8 {
+	s := strings.FieldsFunc(strings.TrimSpace(input), func(r rune) bool { return r == sep })
+	nn := make([]uint8, 0, len(s))
+	for _, sn := range s {
+		n, _ := strconv.Atoi(sn)
+		nn = append(nn, uint8(n))
+	}
+	return nn
+}
+
 type ByteGrid interface {
 	At(x, y int) (b byte, oob bool)
 	Width() int

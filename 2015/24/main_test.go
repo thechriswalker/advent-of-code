@@ -37,7 +37,17 @@ func TestProblem1(t *testing.T) {
 
 var problem2cases = []Case{
 	// cases here
-	{"", ""},
+	{`1
+2
+3
+4
+5
+7
+8
+9
+10
+11
+`, "44"},
 }
 
 func TestProblem2(t *testing.T) {

@@ -12,9 +12,7 @@ func main() {
 	aoc.Run(2015, 24, solve1, solve2)
 }
 
-type Group []int
-
-func (g Group) QuantumEntanglement() int {
+func quantumEntanglement(g []int) int {
 	q := 1
 	for _, i := range g {
 		q *= i
@@ -22,69 +20,95 @@ func (g Group) QuantumEntanglement() int {
 	return q
 }
 
-func (g Group) Len() int {
-	return len(g)
-}
-
-func makeGroups(l []int) []*Group {
-	all := []*Group{}
-	// they must all have the same weight and we must use them all.
-	// so we just have to find groups of a specific wieght.
-	sum := 0
-	for _, i := range l {
-		sum += i
-	}
-	// should be divisible by 3
-	target := sum / 3
-	fmt.Println("Sum is", sum, "target is", target)
-	// now we create combinations that add up to target.
-	// lets sort them to highest first.
-	sort.Sort(sort.Reverse(sort.IntSlice(l)))
-	// now let's try and make a
-	//length := 1
-
-	// for??
-
-	return all
-}
+//func findGroupsOfWeight(l []int, x int) (groups [][]int, remaining []int)
 
 // Implement Solution to Problem 1
 func solve1(input string) string {
-	// we need to find as many unique arrangements of
-	// the packages into 3 groups.
-	// then foreach group find the ones with the minimum number
-	// of packages.
-	// out of those, find the one with the smallest QE.
-
-	packages := aoc.ToIntSlice(input, '\n')
-
-	groups := makeGroups(packages)
-
-	min := math.MaxInt64
-	var minGroups []*Group
-	for _, g := range groups {
-		if min > g.Len() {
-			min = g.Len()
-			minGroups = []*Group{g}
-		}
-		if min == g.Len() {
-			minGroups = append(minGroups, g)
-		}
-	}
-	// sort by QE
-	minQE := math.MaxInt64
-	for _, g := range minGroups {
-		qe := g.QuantumEntanglement()
-		if minQE > qe {
-			minQE = qe
-		}
-	}
-
-	return fmt.Sprint(minQE)
-
+	return fmt.Sprint(solveN(input, 3))
 }
 
 // Implement Solution to Problem 2
 func solve2(input string) string {
-	return "<unsolved>"
+	return fmt.Sprint(solveN(input, 4))
+}
+
+func solveN(input string, groups int) int {
+	packages := aoc.ToIntSlice(input, '\n')
+	sort.Sort(sort.Reverse(sort.IntSlice(packages)))
+	sum := 0
+	for _, i := range packages {
+		sum += i
+	}
+	// should be divisible by $groups
+	target := sum / groups
+	//fmt.Println("Sum is", sum, "target is", target)
+	combos := CombinationsThatMatch(packages, target)
+	//fmt.Println("combos:", combos[0])
+	// find the "shortest" combos
+	shortest := 10000000000
+	sets := [][]int{}
+	for _, c := range combos {
+		if len(c) < shortest {
+			shortest = len(c)
+			sets = [][]int{c}
+		} else if len(c) == shortest {
+			sets = append(sets, c)
+		}
+	}
+	// shortestSet is first
+	l := len(sets[0])
+	q := math.MaxInt
+	for _, s := range sets {
+		if len(s) > l {
+			break
+		}
+		m := quantumEntanglement(s)
+		if m < q {
+			q = m
+		}
+	}
+	// arrangements := makeArrangements(packages)
+
+	// sort.Sort(arrangements)
+
+	// q := quantumEntanglement(arrangements[0][0])
+
+	return q
+}
+
+func CombinationsThatMatch(options []int, target int) [][]int {
+	all := [][]int{}
+	var recur func(a, b []int, sum int)
+	recur = func(base, rem []int, sum int) {
+		if sum == target {
+			all = append(all, base)
+			return
+		}
+		//log.Printf("base: %v, remaining: %v\n", base, rem)
+		if len(base) == 6 {
+			return
+		}
+		for i := range rem {
+			nextSum := sum + rem[i]
+			if nextSum > target {
+				continue
+			}
+			nextBase := make([]int, len(base)+1)
+			copy(nextBase, base)
+			// pick i
+			nextBase[len(base)] = rem[i]
+			// create the next remainder.
+			if len(rem) == 1 {
+				recur(nextBase, []int{}, nextSum)
+			} else {
+				nextRem := make([]int, len(rem)-1)
+				copy(nextRem, rem[:i])
+				copy(nextRem[i:], rem[i+1:])
+				recur(nextBase, nextRem, nextSum)
+			}
+
+		}
+	}
+	recur([]int{}, options, 0)
+	return all
 }
