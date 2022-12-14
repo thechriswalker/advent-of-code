@@ -23,7 +23,7 @@ func ToIntSlice(input string, sep rune) []int {
 	s := strings.FieldsFunc(strings.TrimSpace(input), func(r rune) bool { return r == sep })
 	nn := make([]int, 0, len(s))
 	for _, sn := range s {
-		n, _ := strconv.Atoi(sn)
+		n, _ := strconv.Atoi(strings.TrimSpace(sn))
 		nn = append(nn, n)
 	}
 	return nn
@@ -33,8 +33,17 @@ func ToUint8Slice(input string, sep rune) []uint8 {
 	s := strings.FieldsFunc(strings.TrimSpace(input), func(r rune) bool { return r == sep })
 	nn := make([]uint8, 0, len(s))
 	for _, sn := range s {
-		n, _ := strconv.Atoi(sn)
+		n, _ := strconv.Atoi(strings.TrimSpace(sn))
 		nn = append(nn, uint8(n))
+	}
+	return nn
+}
+func ToUint64Slice(input string, sep rune) []uint64 {
+	s := strings.FieldsFunc(strings.TrimSpace(input), func(r rune) bool { return r == sep })
+	nn := make([]uint64, 0, len(s))
+	for _, sn := range s {
+		n, _ := strconv.Atoi(strings.TrimSpace(sn))
+		nn = append(nn, uint64(n))
 	}
 	return nn
 }
