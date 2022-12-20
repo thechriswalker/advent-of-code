@@ -48,6 +48,9 @@ func ToUint64Slice(input string, sep rune) []uint64 {
 	return nn
 }
 
+// ByteGrid represents a grid of data represented by a single byte.
+// out of bounds access returns the "unknown" byte and a bool oob=true
+// the grid is laid out as left-to-right is increasing x, up-to-down is increasing y
 type ByteGrid interface {
 	At(x, y int) (b byte, oob bool)
 	Width() int
@@ -174,17 +177,23 @@ func (g *SparseByteGrid) Bounds() (x1, y1, x2, y2 int) {
 }
 func (g *SparseByteGrid) Set(x, y int, b byte) bool {
 	g.data[[2]int{x, y}] = b
-	if x < g.xmin {
-		g.xmin = x
-	}
-	if y < g.ymin {
-		g.ymin = y
-	}
-	if x > g.xmax {
-		g.xmax = x
-	}
-	if y > g.ymax {
-		g.ymax = y
+	if len(g.data) == 1 {
+		// first insert, set bounds around this point
+		g.xmin, g.ymin = x, y
+		g.xmax, g.ymax = x, y
+	} else {
+		if x < g.xmin {
+			g.xmin = x
+		}
+		if y < g.ymin {
+			g.ymin = y
+		}
+		if x > g.xmax {
+			g.xmax = x
+		}
+		if y > g.ymax {
+			g.ymax = y
+		}
 	}
 	return true
 }
