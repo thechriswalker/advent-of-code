@@ -190,9 +190,11 @@ type Case struct {
 	Out string
 }
 
+const example = ""
+
 var problem1cases = []Case{
 	// cases here
-	{"", ""},
+	{example, ""},
 }
 
 func TestProblem1(t *testing.T) {
@@ -206,7 +208,7 @@ func TestProblem1(t *testing.T) {
 
 var problem2cases = []Case{
 	// cases here
-	{"", ""},
+	{example, ""},
 }
 
 func TestProblem2(t *testing.T) {
