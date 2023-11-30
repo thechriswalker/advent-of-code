@@ -55,11 +55,19 @@ func main() {
 	}
 
 	// and now set the defaults
-	if prob.Year == 0 {
-		prob.Year = time.Now().Year()
+	// but only in December, and only if no year is set.
+	if time.Now().Month() == time.December {
+		if prob.Year == 0 {
+			prob.Year = time.Now().Year()
+
+			if prob.Day == 0 {
+				prob.Day = time.Now().Day()
+			}
+		}
 	}
-	if prob.Day == 0 {
-		prob.Day = time.Now().Day()
+	currentYear := time.Now().Year()
+	if prob.Year == 0 || prob.Year > currentYear || prob.Day == 0 || prob.Day > 25 {
+		log.Fatalf("bad input year/day: year=%d, day=%d", prob.Year, prob.Day)
 	}
 
 	basePath := fmt.Sprintf("%d/%02d", prob.Year, prob.Day)
@@ -247,7 +255,7 @@ func checkProgress(refresh string) {
 
 	}
 	// we need a cookie
-	cookie, err := ioutil.ReadFile(".aoc-cookie")
+	cookie, err := os.ReadFile(".aoc-cookie")
 	if err != nil {
 		log.Fatalln("Could not read cookie from `./.aoc-cookie`, please make sure it is present. Error:", err)
 	}
@@ -256,6 +264,9 @@ func checkProgress(refresh string) {
 	dir, _ := os.Open(".")
 	names, _ := dir.Readdirnames(-1)
 	thisYear := time.Now().Year()
+	if time.Now().Month() < time.December {
+		thisYear--
+	}
 	years := []int{}
 	for _, name := range names {
 		year, err := strconv.Atoi(name)
@@ -263,7 +274,7 @@ func checkProgress(refresh string) {
 			years = append(years, year)
 		}
 	}
-	sort.Sort(sort.IntSlice(years))
+	sort.Ints(years)
 	//log.Println("found years", years)
 	for _, year := range years {
 		// see if we have a progress file.

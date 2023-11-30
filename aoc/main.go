@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -73,7 +72,7 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 	var input string
 	getInput := func() string {
 		if input == "" {
-			b, err := ioutil.ReadFile("input.txt")
+			b, err := os.ReadFile("input.txt")
 			if err != nil {
 				if os.IsNotExist(err) {
 					log.Fatalln("Please create 'input.txt' with your problem input")
@@ -117,6 +116,7 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 	}
 
 	PrintHeader(YEAR, DAY)
+	runTest(0)
 	runTest(1)
 	answerRecorder, _ := os.Open(os.DevNull)
 	if *recordAnswers && !*testsOnly {
@@ -139,8 +139,15 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 }
 
 func runTest(n int) {
-	fmt.Printf("Testing problem %d: ", n)
-	output, err := exec.Command("go", "test", "-run", fmt.Sprintf("^TestProblem%d$", n)).CombinedOutput()
+	args := []string{"test"}
+	if n == 0 {
+		fmt.Printf("Running any pre-tests: ")
+		args = append(args, "-skip", "^TestProblem[12]$")
+	} else {
+		fmt.Printf("Testing problem %d: ", n)
+		args = append(args, "-run", fmt.Sprintf("^TestProblem%d$", n))
+	}
+	output, err := exec.Command("go", args...).CombinedOutput()
 	if err != nil {
 		fmt.Println("\x1b[1;31mFAIL\x1b[0m")
 		os.Stdout.Write(output)
@@ -151,7 +158,7 @@ func runTest(n int) {
 
 func readAnswers(year, day int) (a1, a2 string) {
 	// assume they are in a file answers.txt
-	b, err := ioutil.ReadFile("./answers.txt")
+	b, err := os.ReadFile("./answers.txt")
 	if err != nil {
 		log.Fatalf("Could not open answers file at %d/%02d/answers.txt\n", year, day)
 	}
