@@ -32,9 +32,11 @@ func main() {
 	var refresh string
 	var checkAnswers bool
 	var recordAnswers bool
+	var timingOnly bool
 	flag.BoolVar(&runOnlyTests, "test-only", false, "run only tests")
 	flag.BoolVar(&checkAnswers, "check-answers", false, "run answer check")
 	flag.BoolVar(&recordAnswers, "record-answers", false, "record current solutions as correct")
+	flag.BoolVar(&timingOnly, "timing-only", false, "Show only timings")
 	flag.IntVar(&prob.Year, "year", 0, "the year")
 	flag.IntVar(&prob.Day, "day", 0, "the day of december")
 	flag.BoolVar(&fetchProgress, "progress", false, "fetch/refresh/view progress")
@@ -65,6 +67,12 @@ func main() {
 		}
 	}
 	currentYear := time.Now().Year()
+	// for the timing, we can cope with 0 day
+	if timingOnly {
+		runTimings(prob.Year, prob.Day)
+		return
+	}
+
 	if prob.Year == 0 || prob.Year > currentYear || prob.Day == 0 || prob.Day > 25 {
 		log.Fatalf("bad input year/day: year=%d, day=%d", prob.Year, prob.Day)
 	}
@@ -503,4 +511,36 @@ func checkAllAnswers(oneYearOnly int) {
 		}
 		fmt.Print("\x1b[0m\n")
 	}
+}
+
+func runTimings(thisYearOnly, thisDayOnly int) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("could not get working dir: %s", err)
+	}
+	for year := 2015; year <= time.Now().Year(); year++ {
+		if thisYearOnly > 0 && thisYearOnly != year {
+			continue
+		}
+		for day := 1; day < 26; day++ {
+			if thisDayOnly > 0 && thisDayOnly != day {
+				continue
+			}
+			printTiming(year, day, cwd)
+		}
+	}
+}
+
+func printTiming(year, day int, cwd string) {
+	// does the code exist?
+	basePath := fmt.Sprintf("%s/%d/%02d", cwd, year, day)
+	if err := os.Chdir(basePath); err != nil {
+		// probably doesn't exist.
+		return
+	}
+	run := exec.Command("go", "run", "main.go", "-timing-only")
+	run.Stdin = os.Stdin
+	run.Stderr = io.Discard
+	run.Stdout = os.Stdout
+	run.Run()
 }

@@ -27,7 +27,7 @@ func solve1(input string) string {
 	valid := 0
 	for {
 		ok := p.meetsCriteria()
-		log.Println("Checking", p.value, " => ", p.digits, " => ", ok)
+		//log.Println("Checking", p.value, " => ", p.digits, " => ", ok)
 		if ok {
 			valid++
 		}

@@ -33,7 +33,7 @@ func PrintHeader(year, day int) {
 	fmt.Println()
 }
 
-func timeAndPrint(fn func(in string) string, input string, answers io.Writer) {
+func timeAndPrint(fn func(in string) string, input string, answers io.Writer, timingOnly bool) {
 	t := time.Now()
 	s := fn(input)
 	fmt.Fprintln(answers, s)
@@ -47,7 +47,12 @@ func timeAndPrint(fn func(in string) string, input string, answers io.Writer) {
 		// less than 15 seconds, ok... yellow
 		c = 93
 	}
-	fmt.Printf("\x1b[1;37m%s\x1b[0m \x1b[%dm%v\x1b[0m\n", s, c, d)
+	if !timingOnly {
+		fmt.Printf("\x1b[1;37m%s\x1b[0m ", s)
+	}
+
+	fmt.Printf("\x1b[%dm%v\x1b[0m\n", c, d)
+
 }
 
 func SupressOutput() func() {
@@ -62,12 +67,28 @@ func SupressOutput() func() {
 	}
 }
 
+func wrapSuppressOutput(f func(string) string) func(string) string {
+	return func(s string) string {
+		defer SupressOutput()()
+		return f(s)
+	}
+}
+
 // if we have the environment variable for check answers
 // --check-answers=1:abc
 func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 	testsOnly := flag.Bool("test-only", false, "Only run the tests")
+	timingOnly := flag.Bool("timing-only", false, "Show only timings")
 	answersCheck := flag.Bool("check-answers", false, "Check Solutions against know answers")
 	recordAnswers := flag.Bool("record-answers", false, "Save current answers as correct")
+	flag.Parse()
+
+	suppresStdoutDuringExecution := *answersCheck || *timingOnly || *recordAnswers || *testsOnly
+
+	if suppresStdoutDuringExecution {
+		solve1 = wrapSuppressOutput(solve1)
+		solve2 = wrapSuppressOutput(solve2)
+	}
 
 	var input string
 	getInput := func() string {
@@ -87,16 +108,12 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 		return input
 	}
 
-	flag.Parse()
 	if *answersCheck {
 		fails := 100 //NB this is supposed to start at `100`
 		in := getInput()
 		answer1, answer2 := readAnswers(YEAR, DAY)
-		// we really want to suppress stdout/stderr for this.
-		restore := SupressOutput()
 		result1 := solve1(in)
 		result2 := solve2(in)
-		restore()
 		fmt.Printf("%d-%02d Part 1: ", YEAR, DAY)
 		if result1 == answer1 {
 			fmt.Println("\x1b[1;32mPASS\x1b[0m")
@@ -114,11 +131,19 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 		os.Exit(fails)
 		return
 	}
+	answerRecorder, _ := os.Open(os.DevNull)
+	if *timingOnly {
+		// noheader no tests
+		fmt.Printf("%d-%02d Part 1: ", YEAR, DAY)
+		timeAndPrint(solve1, getInput(), answerRecorder, true)
+		fmt.Printf("%d-%02d Part 2: ", YEAR, DAY)
+		timeAndPrint(solve2, getInput(), answerRecorder, true)
+		return
+	}
 
 	PrintHeader(YEAR, DAY)
 	runTest(0)
 	runTest(1)
-	answerRecorder, _ := os.Open(os.DevNull)
 	if *recordAnswers && !*testsOnly {
 		var err error
 		answerRecorder, err = os.Create("./answers.txt")
@@ -129,12 +154,12 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 	}
 	if !*testsOnly {
 		fmt.Print("Solving problem 1: ")
-		timeAndPrint(solve1, getInput(), answerRecorder)
+		timeAndPrint(solve1, getInput(), answerRecorder, false)
 	}
 	runTest(2)
 	if !*testsOnly {
 		fmt.Print("Solving problem 2: ")
-		timeAndPrint(solve2, getInput(), answerRecorder)
+		timeAndPrint(solve2, getInput(), answerRecorder, false)
 	}
 }
 
