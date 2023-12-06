@@ -89,7 +89,7 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 
 	flag.Parse()
 	if *answersCheck {
-		fails := 100
+		fails := 100 //NB this is supposed to start at `100`
 		in := getInput()
 		answer1, answer2 := readAnswers(YEAR, DAY)
 		// we really want to suppress stdout/stderr for this.
@@ -141,7 +141,7 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 func runTest(n int) {
 	args := []string{"test"}
 	if n == 0 {
-		fmt.Printf("Running any pre-tests: ")
+		fmt.Printf("Any Extra Testing: ")
 		args = append(args, "-skip", "^TestProblem[12]$")
 	} else {
 		fmt.Printf("Testing problem %d: ", n)

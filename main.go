@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -49,8 +48,8 @@ func main() {
 		return
 	}
 	// check all if no year.day given
-	if checkAnswers && prob.Year == 0 && prob.Day == 0 {
-		checkAllAnswers()
+	if checkAnswers && prob.Day == 0 {
+		checkAllAnswers(prob.Year)
 		return
 	}
 
@@ -132,7 +131,7 @@ func createFiles(p Problem, basePath string) error {
 		}
 		if f.name == "input.txt" {
 			// let's try to fetch from AOC.
-			cookie, err := ioutil.ReadFile(".aoc-cookie")
+			cookie, err := os.ReadFile(".aoc-cookie")
 			if err != nil {
 				log.Println("We can fetch the input data from AoC if we have the cookie!")
 				log.Println("Could not read cookie from `./.aoc-cookie`, please make sure it is present. Error:", err)
@@ -145,7 +144,7 @@ func createFiles(p Problem, basePath string) error {
 					})
 					res, err := http.DefaultClient.Do(req)
 					if err != nil {
-						log.Printf("Failed to fetch input data. Bad cookie? %w\n", err)
+						log.Printf("Failed to fetch input data. Bad cookie? %s\n", err)
 					} else if res.StatusCode != http.StatusOK {
 						log.Printf("Failed to fetch input data. Bad cookie? (status:%d)\n", res.StatusCode)
 					} else {
@@ -324,7 +323,7 @@ func loadAndSaveProgress(year int, file, cookie string) *YearProgress {
 		panic(err)
 	}
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -450,7 +449,7 @@ func (yp *YearProgress) String() string {
 	return b.String()
 }
 
-func checkAllAnswers() {
+func checkAllAnswers(oneYearOnly int) {
 	// loop through all dirs.
 	// we start in 2015
 	// and go to today.
@@ -462,6 +461,9 @@ func checkAllAnswers() {
 	fmt.Println("     1234567890123456789012345")
 	buf := &strings.Builder{}
 	for year := 2015; year <= time.Now().Year(); year++ {
+		if oneYearOnly > 0 && oneYearOnly != year {
+			continue
+		}
 		fmt.Printf("%d ", year)
 		for day := 1; day < 26; day++ {
 			// check if we have a main.go in that folder.
