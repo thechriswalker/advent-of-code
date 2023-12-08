@@ -1,9 +1,3 @@
 # Advent of Code 2023 day 5
 
-## Problem 1
-
-...
-
-## Problem 2
-
-...
+See [https://adventofcode.com/2023/day/5](https://adventofcode.com/2023/day/5)

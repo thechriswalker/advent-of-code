@@ -81,6 +81,10 @@ func main() {
 	if err := os.MkdirAll(basePath, 0755); err != nil {
 		log.Fatalf("could not make directorys: %s", basePath)
 	}
+	privateBasePath := privateDataPrefix + basePath
+	if err := os.MkdirAll(privateBasePath, 0755); err != nil {
+		log.Fatalf("could not make directorys: %s", privateBasePath)
+	}
 	f, err := os.Open(basePath + "/main.go")
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -118,19 +122,28 @@ func main() {
 	run.Run()
 }
 
+const privateDataPrefix = "not_public/"
+
 func createFiles(p Problem, basePath string) error {
 	files := []struct {
 		name     string
 		template *template.Template
+		private  bool
 	}{
-		{"README.md", readmeTpl},
-		{"main.go", mainTpl},
-		{"main_test.go", testTpl},
-		{"input.txt", nil},
+		{name: "README.md", template: readmeTpl},
+		{name: "main.go", template: mainTpl},
+		{name: "main_test.go", template: testTpl},
+		{name: "input.txt", template: nil, private: true},
+		{name: "puzzle.md", template: readmeTpl, private: true},
 	}
 
 	for _, f := range files {
-		file, err := os.Create(basePath + "/" + f.name)
+		filename := basePath + "/" + f.name
+		if f.private {
+			filename = privateDataPrefix + filename
+		}
+
+		file, err := os.Create(filename)
 		if err != nil {
 			return err
 		}
@@ -238,13 +251,7 @@ func TestProblem2(t *testing.T) {
 
 var readmeTpl = template.Must(template.New("test").Parse(`# Advent of Code {{.Year}} day {{.Day}}
 
-## Problem 1
-
-...
-
-## Problem 2
-
-...
+See [https://adventofcode.com/{{.Year}}/day/{{.Day}}](https://adventofcode.com/{{.Year}}/day/{{.Day}})
 `))
 
 func checkProgress(refresh string) {

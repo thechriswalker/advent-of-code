@@ -1,9 +1,3 @@
 # Advent of Code 2022 day 15
 
-## Problem 1
-
-...
-
-## Problem 2
-
-...
+See [https://adventofcode.com/2022/day/15](https://adventofcode.com/2022/day/15)

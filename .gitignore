@@ -1,3 +1,4 @@
 .aoc-cookie
 */.progress.json
-
+not_public/*
+!not_public/README.md

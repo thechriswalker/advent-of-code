@@ -1,9 +1,3 @@
 # Advent of Code 2015 day 17
 
-## Problem 1
-
-...
-
-## Problem 2
-
-...
+See [https://adventofcode.com/2015/day/17](https://adventofcode.com/2015/day/17)

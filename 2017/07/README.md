@@ -1,9 +1,3 @@
 # Advent of Code 2017 day 7
 
-## Problem 1
-
-...
-
-## Problem 2
-
-...
+See [https://adventofcode.com/2017/day/7](https://adventofcode.com/2017/day/7)

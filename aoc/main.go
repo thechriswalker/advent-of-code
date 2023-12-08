@@ -33,6 +33,14 @@ func PrintHeader(year, day int) {
 	fmt.Println()
 }
 
+// Remember AoC says <15 seconds on 10 year old hardware.
+// So we are probably looking at <2 seconds on current hardware.
+// And a good time will be much quicker, we will give ourselves 10ms?
+const (
+	goodTiming = 10 * time.Millisecond
+	badTiming  = time.Second
+)
+
 func timeAndPrint(fn func(in string) string, input string, answers io.Writer, timingOnly bool) {
 	t := time.Now()
 	s := fn(input)
@@ -40,10 +48,10 @@ func timeAndPrint(fn func(in string) string, input string, answers io.Writer, ti
 	d := time.Since(t)
 	// default red
 	c := 31
-	if d < time.Second {
+	if d < goodTiming {
 		// less than a second, green
 		c = 32
-	} else if d < 15*time.Second {
+	} else if d < badTiming {
 		// less than 15 seconds, ok... yellow
 		c = 93
 	}
@@ -90,15 +98,18 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 		solve2 = wrapSuppressOutput(solve2)
 	}
 
+	// from here, i.e. a relative path
+	privateDataPath := fmt.Sprintf("../../not_public/%d/%02d/", YEAR, DAY)
+
 	var input string
 	getInput := func() string {
 		if input == "" {
-			b, err := os.ReadFile("input.txt")
+			b, err := os.ReadFile(privateDataPath + "input.txt")
 			if err != nil {
 				if os.IsNotExist(err) {
-					log.Fatalln("Please create 'input.txt' with your problem input")
+					log.Fatalln("Please create 'input.txt' in private path with your problem input")
 				}
-				log.Fatalln("Error trying to read input file ('input.txt'):", err)
+				log.Fatalln("Error trying to read input file ('input.txt') from private path:", err)
 			}
 			if len(b) == 0 {
 				log.Fatalln("Please add your problem input to 'input.txt'")
@@ -146,7 +157,7 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 	runTest(1)
 	if *recordAnswers && !*testsOnly {
 		var err error
-		answerRecorder, err = os.Create("./answers.txt")
+		answerRecorder, err = os.Create(privateDataPath + "/answers.txt")
 		if err != nil {
 			log.Fatalln("could not open answers file for writing")
 		}
@@ -183,9 +194,11 @@ func runTest(n int) {
 
 func readAnswers(year, day int) (a1, a2 string) {
 	// assume they are in a file answers.txt
-	b, err := os.ReadFile("./answers.txt")
+	privateDataPath := fmt.Sprintf("../../not_public/%d/%02d/", year, day)
+
+	b, err := os.ReadFile(privateDataPath + "/answers.txt")
 	if err != nil {
-		log.Fatalf("Could not open answers file at %d/%02d/answers.txt\n", year, day)
+		log.Fatalf("Could not open answers file at %q\n", privateDataPath+"/answers.txt")
 	}
 	i := 0
 	MapLines(string(b), func(line string) error {
