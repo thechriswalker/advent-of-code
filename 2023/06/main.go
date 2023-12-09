@@ -37,9 +37,15 @@ func solve1(input string) string {
 
 func numWinningOptions(t, d int) int {
 	//return numWinningOptionsNaive(t, d)
+	// this _significantly_ faster being O(1) rather than O(n)
 	return numWinningOptionsQuadratic(t, d)
 }
 
+// This is the brute force method.
+// find but much slower.
+// I expected a race that had something like MaxInt64 as the t
+// to make this impractical, but even this solution finishing
+// in ~25ms on my machine
 func numWinningOptionsNaive(t, d int) int {
 	n := 0
 	for i := 1; i < t; i++ {
@@ -79,7 +85,8 @@ func numWinningOptionsQuadratic(t, d int) int {
 	s1 := (-1*b + sqrtb2_4ac) / -2
 	s2 := (-1*b - sqrtb2_4ac) / -2
 
-	// we want the _next_ integer or _prev_ integer
+	// we want the _next_ integer on lower bound
+	// and _prev_ integer on upper
 	if isInteger(s1) {
 		s1 = s1 + 1
 	} else {
