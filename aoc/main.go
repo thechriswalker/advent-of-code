@@ -35,9 +35,11 @@ func PrintHeader(year, day int) {
 
 // Remember AoC says <15 seconds on 10 year old hardware.
 // So we are probably looking at <2 seconds on current hardware.
-// And a good time will be much quicker, we will give ourselves 10ms?
+// And a good time will be much quicker, we will give ourselves 10ms? 25ms?
+// some problems are hard. so lets be generous and give ourselve 250ms
+// anything greater that 1 second will be considered bad.
 const (
-	goodTiming = 10 * time.Millisecond
+	goodTiming = 250 * time.Millisecond
 	badTiming  = time.Second
 )
 

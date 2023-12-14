@@ -103,6 +103,10 @@ type FixedByteGrid struct {
 	unknown byte
 }
 
+func (g *FixedByteGrid) Value() string {
+	return string(g.data)
+}
+
 func (g *FixedByteGrid) At(x, y int) (byte, bool) {
 	idx := GridIndex(x, y, g.w, g.h)
 	if idx == -1 {
