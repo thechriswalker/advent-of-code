@@ -2,7 +2,9 @@ package aoc
 
 import (
 	"bufio"
+	"fmt"
 	"io"
+	"maps"
 	"os"
 	"strconv"
 	"strings"
@@ -57,6 +59,7 @@ type ByteGrid interface {
 	Height() int
 	Bounds() (x1, y1, x2, y2 int)
 	Set(x, y int, z byte) bool
+	Clone() ByteGrid
 }
 
 func SprintByteGrid(g ByteGrid, hilite map[byte]string) string {
@@ -66,6 +69,62 @@ func SprintByteGrid(g ByteGrid, hilite map[byte]string) string {
 }
 func PrintByteGrid(g ByteGrid, hilite map[byte]string) {
 	FprintByteGrid(os.Stdout, g, hilite)
+}
+
+type Color [2]uint8
+
+var (
+	NoColor = Color{0, 0}
+
+	Black   = Color{0, 30}
+	Red     = Color{0, 31}
+	Green   = Color{0, 32}
+	Yellow  = Color{0, 33}
+	Blue    = Color{0, 34}
+	Magenta = Color{0, 35}
+	Cyan    = Color{0, 36}
+	White   = Color{0, 37}
+
+	BoldBlack   = Color{1, 30}
+	BoldRed     = Color{1, 31}
+	BoldGreen   = Color{1, 32}
+	BoldYellow  = Color{1, 33}
+	BoldBlue    = Color{1, 34}
+	BoldMagenta = Color{1, 35}
+	BoldCyan    = Color{1, 36}
+	BoldWhite   = Color{1, 37}
+)
+
+func SprintByteGridFunc(g ByteGrid, hiliteFn func(x, y int, b byte) Color) string {
+	sb := strings.Builder{}
+	FprintByteGridFunc(&sb, g, hiliteFn)
+	return sb.String()
+}
+func PrintByteGridFunc(g ByteGrid, hiliteFn func(x, y int, b byte) Color) {
+	FprintByteGridFunc(os.Stdout, g, hiliteFn)
+}
+
+func FprintByteGridFunc(w io.Writer, g ByteGrid, hiliteFn func(x, y int, b byte) Color) {
+	if hiliteFn == nil {
+		hiliteFn = func(x, y int, b byte) Color { return NoColor }
+	}
+	x1, y1, x2, y2 := g.Bounds()
+	for y := y1; y <= y2; y++ {
+		for x := x1; x <= x2; x++ {
+			// shouldn't be oob
+			b, _ := g.At(x, y)
+			if c := hiliteFn(x, y, b); c != NoColor {
+				w.Write([]byte("\x1b["))
+				if c[0] == 1 {
+					w.Write([]byte("1;"))
+				}
+				fmt.Fprintf(w, "%dm%c\x1b[0m", c[1], b)
+			} else {
+				w.Write([]byte{b})
+			}
+		}
+		w.Write([]byte{'\n'})
+	}
 }
 
 func FprintByteGrid(w io.Writer, g ByteGrid, hilite map[byte]string) {
@@ -101,6 +160,17 @@ type FixedByteGrid struct {
 	w, h    int
 	data    []byte
 	unknown byte
+}
+
+func (g *FixedByteGrid) Clone() ByteGrid {
+	data := make([]byte, len(g.data))
+	copy(data, g.data)
+	return &FixedByteGrid{
+		w:       g.w,
+		h:       g.h,
+		unknown: g.unknown,
+		data:    data,
+	}
 }
 
 func (g *FixedByteGrid) Value() string {
@@ -149,6 +219,17 @@ type SparseByteGrid struct {
 	ymin, ymax int
 	data       map[[2]int]byte
 	unknown    byte
+}
+
+func (g *SparseByteGrid) Clone() ByteGrid {
+	return &SparseByteGrid{
+		xmin:    g.xmin,
+		xmax:    g.xmax,
+		ymin:    g.ymin,
+		ymax:    g.ymax,
+		unknown: g.unknown,
+		data:    maps.Clone(g.data),
+	}
 }
 
 func NewSparseByteGrid(unknown byte) *SparseByteGrid {
