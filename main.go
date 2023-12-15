@@ -15,6 +15,9 @@ import (
 	"text/template"
 	"time"
 
+	md "github.com/JohannesKaufmann/html-to-markdown"
+	"github.com/PuerkitoBio/goquery"
+
 	"github.com/thechriswalker/advent-of-code/aoc"
 )
 
@@ -33,6 +36,7 @@ func main() {
 	var checkAnswers bool
 	var recordAnswers bool
 	var timingOnly bool
+	var updatePuzzleMd bool
 	flag.BoolVar(&runOnlyTests, "test-only", false, "run only tests")
 	flag.BoolVar(&checkAnswers, "check-answers", false, "run answer check")
 	flag.BoolVar(&recordAnswers, "record-answers", false, "record current solutions as correct")
@@ -41,6 +45,7 @@ func main() {
 	flag.IntVar(&prob.Day, "day", 0, "the day of december")
 	flag.BoolVar(&fetchProgress, "progress", false, "fetch/refresh/view progress")
 	flag.StringVar(&refresh, "refresh", "", "comma-separated years to refresh")
+	flag.BoolVar(&updatePuzzleMd, "update-puzzle", false, "Fetch and write the puzzle Markdown from HTML")
 	flag.Parse()
 
 	if fetchProgress {
@@ -89,7 +94,7 @@ func main() {
 	if err != nil {
 		if os.IsNotExist(err) {
 			// create the files
-			if err := createFiles(prob, basePath); err != nil {
+			if err := createFiles(prob, basePath, updatePuzzleMd); err != nil {
 				log.Fatalln("error creating problem templates:", err)
 			}
 			fmt.Println("Created problem template for", basePath)
@@ -99,7 +104,11 @@ func main() {
 		}
 	} else {
 		f.Close()
+		if updatePuzzleMd {
+			updatePuzzleMarkdown(prob.Year, prob.Day)
+		}
 	}
+
 	if err := os.Chdir(basePath); err != nil {
 		// this should not happen if the previous call succeeded
 		log.Fatalf("could not change to directorys: %s", basePath)
@@ -124,7 +133,7 @@ func main() {
 
 const privateDataPrefix = "not_public/"
 
-func createFiles(p Problem, basePath string) error {
+func createFiles(p Problem, basePath string, fetchPuzzleMd bool) error {
 	files := []struct {
 		name     string
 		template *template.Template
@@ -149,6 +158,11 @@ func createFiles(p Problem, basePath string) error {
 		}
 		if f.template != nil {
 			err = f.template.Execute(file, p)
+		}
+		if f.name == "puzzle.md" && fetchPuzzleMd {
+			file.Close()
+			updatePuzzleMarkdown(p.Year, p.Day)
+			break
 		}
 		if f.name == "input.txt" {
 			// let's try to fetch from AOC.
@@ -218,7 +232,7 @@ type Case struct {
 	Out string
 }
 
-const example = ""
+const example = ` + "``" + `
 
 var problem1cases = []Case{
 	// cases here
@@ -550,4 +564,57 @@ func printTiming(year, day int, cwd string) {
 	run.Stderr = io.Discard
 	run.Stdout = os.Stdout
 	run.Run()
+}
+
+// using our cookie, after we have completed a puzzle, both parts of the question should be available
+// to download. And parse into markdown.
+func updatePuzzleMarkdown(year, day int) {
+	filename := fmt.Sprintf("%s%d/%02d/puzzle.md", privateDataPrefix, year, day)
+	f, err := os.Create(filename)
+	if err != nil {
+		log.Fatalln("could not open file for writing:", filename, "error=", err)
+	}
+	// exec template first.
+	err = readmeTpl.Execute(f, Problem{Year: year, Day: day})
+	if err != nil {
+		log.Fatalln("could not write header template", err)
+	}
+	// we need a cookie
+	cookie, err := os.ReadFile(".aoc-cookie")
+	if err != nil {
+		log.Fatalln("Could not read cookie from `./.aoc-cookie`, please make sure it is present. Error:", err)
+	}
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://adventofcode.com/%d/day/%d", year, day), nil)
+	if err != nil {
+		panic(err)
+	}
+	req.AddCookie(&http.Cookie{
+		Name:  "session",
+		Value: strings.TrimSpace(string(cookie)),
+	})
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+	// Load the HTML document
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cnv := md.NewConverter("", true, nil)
+	cnv.AddRules(md.Rule{
+		Filter: []string{"h2"},
+		Replacement: func(content string, selec *goquery.Selection, options *md.Options) *string {
+			out := strings.Trim(selec.Text(), "\n -")
+			return md.String("## " + out)
+		},
+	})
+	f.Write([]byte("\n"))
+	doc.Find("article.day-desc").Each(func(i int, s *goquery.Selection) {
+		// convert to markdown?
+		f.Write([]byte(cnv.Convert(s)))
+		f.Write([]byte("\n\n"))
+	})
 }
