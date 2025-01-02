@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"sort"
@@ -584,7 +585,8 @@ func updatePuzzleMarkdown(year, day int) {
 	if err != nil {
 		log.Fatalln("Could not read cookie from `./.aoc-cookie`, please make sure it is present. Error:", err)
 	}
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://adventofcode.com/%d/day/%d", year, day), nil)
+	dayurl := fmt.Sprintf("https://adventofcode.com/%d/day/%d", year, day)
+	req, err := http.NewRequest("GET", dayurl, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -602,8 +604,15 @@ func updatePuzzleMarkdown(year, day int) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	baseUrl, _ := url.Parse(dayurl)
 
-	cnv := md.NewConverter("", true, nil)
+	cnv := md.NewConverter("adventofcode.com", true, &md.Options{
+		GetAbsoluteURL: func(selec *goquery.Selection, rawURL, domain string) string {
+			u, _ := url.Parse(rawURL)
+			rel := baseUrl.ResolveReference(u)
+			return rel.String()
+		},
+	})
 	cnv.AddRules(md.Rule{
 		Filter: []string{"h2"},
 		Replacement: func(content string, selec *goquery.Selection, options *md.Options) *string {

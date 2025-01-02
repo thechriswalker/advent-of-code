@@ -2,3 +2,6 @@
 */.progress.json
 not_public/*
 !not_public/README.md
+
+# macos :(
+.DS_Store

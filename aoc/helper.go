@@ -70,6 +70,10 @@ func SprintByteGrid(g ByteGrid, hilite map[byte]string) string {
 func PrintByteGrid(g ByteGrid, hilite map[byte]string) {
 	FprintByteGrid(os.Stdout, g, hilite)
 }
+func OOB(g ByteGrid, x, y int) (oob bool) {
+	_, oob = g.At(x, y)
+	return
+}
 
 type Color [2]uint8
 
