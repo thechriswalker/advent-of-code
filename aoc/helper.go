@@ -6,6 +6,7 @@ import (
 	"io"
 	"maps"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -251,6 +252,24 @@ func (g *FixedByteGrid) Setv(v V2, b byte) bool {
 	return g.Set(v.X, v.Y, b)
 }
 
+func NewFixedByteGrid(w, h int, unknown byte, at func(v V2) byte) *FixedByteGrid {
+	g := &FixedByteGrid{
+		w:       w,
+		h:       h,
+		unknown: unknown,
+		data:    make([]byte, w*h),
+	}
+	if at == nil {
+		at = func(v V2) byte { return unknown }
+	}
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			g.Set(x, y, at(V2{x, y}))
+		}
+	}
+	return g
+}
+
 func CreateFixedByteGridFromString(input string, unknown byte) *FixedByteGrid {
 	g := &FixedByteGrid{
 		data:    make([]byte, 0, len(input)),
@@ -363,6 +382,17 @@ func (v V2) Add(o V2) V2 {
 	return V2{v.X + o.X, v.Y + o.Y}
 }
 
+func (v V2) ManhattanDistance(o V2) int {
+	return abs(v.X-o.X) + abs(v.Y-o.Y)
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
 func Vec2(x, y int) V2 {
 	return V2{x, y}
 }
@@ -381,6 +411,33 @@ var (
 	East  = V2{1, 0}
 	West  = V2{-1, 0}
 )
+
+func CardinalClockwise(v V2) V2 {
+	switch v {
+	case North:
+		return East
+	case East:
+		return South
+	case South:
+		return West
+	case West:
+		return North
+	}
+	panic("not a cardinal input")
+}
+func CardinalAnticlockwise(v V2) V2 {
+	switch v {
+	case North:
+		return West
+	case West:
+		return South
+	case South:
+		return East
+	case East:
+		return North
+	}
+	panic("not a cardinal input")
+}
 
 func GCD[T ~int | ~int8 | ~int16 | ~int32 | ~int64](a, b T) T {
 	if a < 0 {
@@ -403,4 +460,79 @@ func LCM[T ~int | ~int8 | ~int16 | ~int32 | ~int64](a, b T) T {
 		b = -b
 	}
 	return a * b / GCD(a, b)
+}
+
+// shortest path in a grid, with obstacles
+func ShortestPathLength(g ByteGrid, start, end V2, walls ...byte) int {
+	curr := []V2{start}
+	visited := map[V2]struct{}{start: {}}
+	steps := 0
+	for {
+		next := []V2{}
+		for _, c := range curr {
+			if c == end {
+				return steps
+			}
+			for _, d := range []V2{North, South, East, West} {
+				n := c.Add(d)
+				if _, ok := visited[n]; ok {
+					continue
+				}
+				if b, oob := g.Atv(n); oob || slices.Contains(walls, b) {
+					continue
+				}
+				visited[n] = struct{}{}
+				next = append(next, n)
+			}
+		}
+		if len(next) == 0 {
+			return -1
+		}
+		curr = next
+		steps++
+	}
+}
+
+// shortest path in a grid, with obstacles, returning the paths
+func GetShortestPaths(g ByteGrid, start, finish V2, walls ...byte) [][]V2 {
+	type Node struct {
+		Pos   V2
+		Steps []V2
+	}
+
+	curr := []Node{{Pos: start, Steps: []V2{start}}}
+	// we don't keep a cache of visited, as we want to explore all paths,
+	// and they have their own concept of visited.
+	shortest := [][]V2{}
+	for {
+		next := []Node{}
+		for _, c := range curr {
+			if c.Pos == finish {
+				shortest = append(shortest, c.Steps)
+				continue
+			}
+			for _, d := range []V2{North, South, East, West} {
+				n := c.Pos.Add(d)
+				if b, oob := g.Atv(n); oob || slices.Contains(walls, b) {
+					// invalid step
+					continue
+				}
+				if slices.Contains(c.Steps, n) {
+					// already visited
+					continue
+				}
+				// copy the steps
+				steps := make([]V2, len(c.Steps))
+				copy(steps, c.Steps)
+				// add the new step
+				steps = append(steps, n)
+				next = append(next, Node{Pos: n, Steps: steps})
+			}
+		}
+		if len(next) == 0 || len(shortest) > 0 {
+			return shortest
+		}
+		curr = next
+	}
+
 }

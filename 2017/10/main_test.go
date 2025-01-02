@@ -2,6 +2,8 @@ package main
 
 import (
 	"testing"
+
+	"github.com/thechriswalker/advent-of-code/2017/10/knothash"
 )
 
 // tests for the AdventOfCode 2017 day 10 solutions
@@ -51,7 +53,7 @@ func TestKnotHash(t *testing.T) {
 	}
 	for _, tt := range tests {
 		input, expected := tt[0], tt[1]
-		actual := KnotHash(input)
+		actual := knothash.Hex(input)
 		if actual != expected {
 			t.Errorf("Input=%q Expected=%s Actual=%s", input, expected, actual)
 		}
