@@ -81,8 +81,8 @@ func solve2(input string) string {
 }
 
 func fixOrdering(list []int, rules map[int][]int) (fixed bool) {
-	// same as isOrdered, but we need to find the first number that is out of order
-	// and switch it
+	// same as isOrdered, but we need to find the numbers that are out of order
+	// and switch them
 	for i := 0; i < len(list); i++ {
 		p := list[i]
 		// we need to find
