@@ -55,10 +55,12 @@ func ToUint64Slice(input string, sep rune) []uint64 {
 // the grid is laid out as left-to-right is increasing x, up-to-down is increasing y
 type ByteGrid interface {
 	At(x, y int) (b byte, oob bool)
+	Atv(v V2) (b byte, oob bool)
 	Width() int
 	Height() int
 	Bounds() (x1, y1, x2, y2 int)
 	Set(x, y int, z byte) bool
+	Setv(v V2, z byte) bool
 	Clone() ByteGrid
 }
 
@@ -67,9 +69,21 @@ func SprintByteGrid(g ByteGrid, hilite map[byte]string) string {
 	FprintByteGrid(&sb, g, hilite)
 	return sb.String()
 }
+
+func SprintByteGridC(g ByteGrid, hilite map[byte]Color) string {
+	sb := strings.Builder{}
+	FprintByteGridC(&sb, g, hilite)
+	return sb.String()
+}
+
 func PrintByteGrid(g ByteGrid, hilite map[byte]string) {
 	FprintByteGrid(os.Stdout, g, hilite)
 }
+
+func PrintByteGridC(g ByteGrid, hilite map[byte]Color) {
+	FprintByteGridC(os.Stdout, g, hilite)
+}
+
 func OOB(g ByteGrid, x, y int) (oob bool) {
 	_, oob = g.At(x, y)
 	return
@@ -150,12 +164,42 @@ func FprintByteGrid(w io.Writer, g ByteGrid, hilite map[byte]string) {
 	}
 }
 
+func FprintByteGridC(w io.Writer, g ByteGrid, hilite map[byte]Color) {
+	x1, y1, x2, y2 := g.Bounds()
+	for y := y1; y <= y2; y++ {
+		for x := x1; x <= x2; x++ {
+			// shouldn't be oob
+			b, _ := g.At(x, y)
+			if c, ok := hilite[b]; ok && c != NoColor {
+				w.Write([]byte("\x1b["))
+				if c[0] == 1 {
+					w.Write([]byte("1;"))
+				}
+				fmt.Fprintf(w, "%dm%c\x1b[0m", c[1], b)
+			} else {
+				w.Write([]byte{b})
+			}
+		}
+		w.Write([]byte{'\n'})
+	}
+}
+
 func IterateByteGrid(g ByteGrid, f func(x, y int, b byte)) {
 	x1, y1, x2, y2 := g.Bounds()
 	for y := y1; y <= y2; y++ {
 		for x := x1; x <= x2; x++ {
 			b, _ := g.At(x, y)
 			f(x, y, b)
+		}
+	}
+}
+
+func IterateByteGridv(g ByteGrid, f func(v V2, b byte)) {
+	x1, y1, x2, y2 := g.Bounds()
+	for y := y1; y <= y2; y++ {
+		for x := x1; x <= x2; x++ {
+			b, _ := g.At(x, y)
+			f(V2{x, y}, b)
 		}
 	}
 }
@@ -180,7 +224,9 @@ func (g *FixedByteGrid) Clone() ByteGrid {
 func (g *FixedByteGrid) Value() string {
 	return string(g.data)
 }
-
+func (g *FixedByteGrid) Atv(v V2) (byte, bool) {
+	return g.At(v.X, v.Y)
+}
 func (g *FixedByteGrid) At(x, y int) (byte, bool) {
 	idx := GridIndex(x, y, g.w, g.h)
 	if idx == -1 {
@@ -200,6 +246,9 @@ func (g *FixedByteGrid) Set(x, y int, b byte) bool {
 	}
 	g.data[idx] = b
 	return true
+}
+func (g *FixedByteGrid) Setv(v V2, b byte) bool {
+	return g.Set(v.X, v.Y, b)
 }
 
 func CreateFixedByteGridFromString(input string, unknown byte) *FixedByteGrid {
@@ -259,6 +308,9 @@ func (g *SparseByteGrid) At(x, y int) (byte, bool) {
 	}
 	return b, false
 }
+func (g *SparseByteGrid) Atv(v V2) (byte, bool) {
+	return g.At(v.X, v.Y)
+}
 func (g *SparseByteGrid) Width() int  { return g.ymax - g.ymin }
 func (g *SparseByteGrid) Height() int { return g.xmax - g.xmin }
 func (g *SparseByteGrid) Bounds() (x1, y1, x2, y2 int) {
@@ -286,6 +338,9 @@ func (g *SparseByteGrid) Set(x, y int, b byte) bool {
 	}
 	return true
 }
+func (g *SparseByteGrid) Setv(v V2, b byte) bool {
+	return g.Set(v.X, v.Y, b)
+}
 
 func GridIndex(x, y, stride, height int) int {
 	if x < 0 || x >= stride || y < 0 || y >= height {
@@ -298,4 +353,54 @@ func GridCoords(idx, stride int) (x, y int) {
 	x = idx % stride
 	y = idx / stride
 	return
+}
+
+type V2 struct {
+	X, Y int
+}
+
+func (v V2) Add(o V2) V2 {
+	return V2{v.X + o.X, v.Y + o.Y}
+}
+
+func Vec2(x, y int) V2 {
+	return V2{x, y}
+}
+
+type V3 struct {
+	X, Y, Z int
+}
+
+func Vec3(x, y, z int) V3 {
+	return V3{x, y, z}
+}
+
+var (
+	North = V2{0, -1}
+	South = V2{0, 1}
+	East  = V2{1, 0}
+	West  = V2{-1, 0}
+)
+
+func GCD[T ~int | ~int8 | ~int16 | ~int32 | ~int64](a, b T) T {
+	if a < 0 {
+		a = -a
+	}
+	if b < 0 {
+		b = -b
+	}
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
+}
+
+func LCM[T ~int | ~int8 | ~int16 | ~int32 | ~int64](a, b T) T {
+	if a < 0 {
+		a = -a
+	}
+	if b < 0 {
+		b = -b
+	}
+	return a * b / GCD(a, b)
 }

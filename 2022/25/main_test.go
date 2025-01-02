@@ -4,21 +4,30 @@ import (
 	"testing"
 )
 
-// tests for the AdventOfCode 2017 day 11 solutions
+// tests for the AdventOfCode 2022 day 25 solutions
 
 type Case struct {
 	In  string
 	Out string
 }
 
-const example = "ne,ne,ne"
+const example = `1=-0-2
+12111
+2=0=
+21
+2=01
+111
+20012
+112
+1=-1=
+1-12
+12
+1=
+122`
 
 var problem1cases = []Case{
 	// cases here
-	{example, "3"},
-	{"ne,ne,sw,sw", "0"},
-	{"ne,ne,s,s", "2"},
-	{"se,sw,se,sw,sw", "3"},
+	{example, "2=-1=0"},
 }
 
 func TestProblem1(t *testing.T) {
@@ -32,7 +41,7 @@ func TestProblem1(t *testing.T) {
 
 var problem2cases = []Case{
 	// cases here
-	//{example, ""},
+	{example, ""},
 }
 
 func TestProblem2(t *testing.T) {

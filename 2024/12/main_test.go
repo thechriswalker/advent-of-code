@@ -4,21 +4,40 @@ import (
 	"testing"
 )
 
-// tests for the AdventOfCode 2017 day 11 solutions
+// tests for the AdventOfCode 2024 day 12 solutions
 
 type Case struct {
 	In  string
 	Out string
 }
 
-const example = "ne,ne,ne"
+const example = `AAAA
+BBCD
+BBCC
+EEEC`
+
+const ex1 = `OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO`
+
+const ex2 = `RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE`
 
 var problem1cases = []Case{
 	// cases here
-	{example, "3"},
-	{"ne,ne,sw,sw", "0"},
-	{"ne,ne,s,s", "2"},
-	{"se,sw,se,sw,sw", "3"},
+	{example, "140"},
+	{ex1, "772"},
+	{ex2, "1930"},
 }
 
 func TestProblem1(t *testing.T) {
@@ -30,9 +49,27 @@ func TestProblem1(t *testing.T) {
 	}
 }
 
+const (
+	ex3 = `EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE`
+	ex4 = `AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA`
+)
+
 var problem2cases = []Case{
 	// cases here
-	//{example, ""},
+	{example, "80"},
+	{ex1, "436"},
+	{ex3, "236"},
+	{ex4, "368"},
+	{ex2, "1206"},
 }
 
 func TestProblem2(t *testing.T) {
