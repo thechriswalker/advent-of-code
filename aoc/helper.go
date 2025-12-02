@@ -536,3 +536,35 @@ func GetShortestPaths(g ByteGrid, start, finish V2, walls ...byte) [][]V2 {
 	}
 
 }
+
+var debugEnabled = false
+
+func init() {
+	dbg := os.Getenv("DEBUG")
+	debugEnabled, _ = strconv.ParseBool(dbg)
+}
+
+func DisableDebug() func() {
+	before := debugEnabled
+	if before {
+		debugEnabled = false
+	}
+	return func() {
+		debugEnabled = before
+	}
+}
+
+func Debugf(msg string, args ...any) {
+	if debugEnabled {
+		fmt.Printf(msg, args...)
+		if msg[len(msg)-1] != '\n' {
+			fmt.Print("\n")
+		}
+	}
+}
+
+func Debug(args ...any) {
+	if debugEnabled {
+		fmt.Println(args...)
+	}
+}
