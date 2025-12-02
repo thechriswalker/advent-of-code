@@ -374,6 +374,62 @@ func loadAndSaveProgress(year int, file, cookie string) *YearProgress {
 }
 
 func parseStatsHTML(body string, progress *YearProgress) error {
+	if progress.Year > 2024 {
+		return parseStatsHTMLGreaterThan2024(body, progress)
+	}
+	return parseStatsHTMLLessThan2025(body, progress)
+
+}
+func parseStatsHTMLGreaterThan2024(body string, progress *YearProgress) error {
+	split := "personal leaderboard times:</p>"
+	idx := strings.Index(body, split)
+	if idx < 0 {
+		return fmt.Errorf("stats section start not found")
+	}
+	body = body[idx+len(split):]
+	// the end is the </pre>
+	idx = strings.Index(body, `</pre>`)
+	if idx < 0 {
+		return fmt.Errorf("stats section end not found")
+	}
+	body = body[:idx]
+	lines := strings.Split(body, "\n")
+	progress.Updated = time.Now()
+	progress.Days = make([]DayProgress, 0, len(lines))
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) == 3 {
+			// 0 - day
+			// 1 - first star time
+			// 2 - second star time
+			day, _ := strconv.Atoi(fields[0])
+			time1 := getTime(fields[1])
+			time2 := getTime(fields[2])
+			dp := DayProgress{
+				Day: day,
+				Part1: &PartProgress{
+					Time: time1,
+				},
+			}
+			// time2 will be nil if we haven't done it
+			if time2 != "-" {
+				dp.Part2 = &PartProgress{
+					Time: time2,
+				}
+			}
+			progress.Days = append(progress.Days, dp)
+		}
+	}
+	return nil
+}
+func getTime(t string) string {
+	if t == "&gt;24h" {
+		return "over 24 hours"
+	}
+	return t
+}
+
+func parseStatsHTMLLessThan2025(body string, progress *YearProgress) error {
 	// we should test this one! so as not to hammer the AoC.
 	// let's find the start, the second match of this.
 	idx := strings.Index(body, " Score</span>\n")
@@ -390,12 +446,7 @@ func parseStatsHTML(body string, progress *YearProgress) error {
 	lines := strings.Split(body, "\n")
 	progress.Updated = time.Now()
 	progress.Days = make([]DayProgress, 0, len(lines))
-	getTime := func(t string) string {
-		if t == "&gt;24h" {
-			return "over 24 hours"
-		}
-		return t
-	}
+
 	for _, line := range lines {
 		fields := strings.Fields(line)
 		if len(fields) == 7 {

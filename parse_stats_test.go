@@ -140,7 +140,132 @@ func TestParseHTML(t *testing.T) {
 	}
 	err := parseStatsHTML(data, &p)
 	if err != nil {
-		t.Fatalf("Parse Fail %v", err)
+		t.Fatalf("Parse Fail <2025 %v", err)
+	}
+	json.NewEncoder(os.Stdout).Encode(p)
+
+	p = YearProgress{Year: 2025}
+	err = parseStatsHTML(dataFrom2025, &p)
+	if err != nil {
+		t.Fatalf("Parse Fail >=2025 %v", err)
 	}
 	json.NewEncoder(os.Stdout).Encode(p)
 }
+
+const dataFrom2025 = `
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8"/>
+<title>Leaderboard - Advent of Code 2025</title>
+<link rel="stylesheet" type="text/css" href="/static/style.css?32"/>
+<link rel="stylesheet alternate" type="text/css" href="/static/highcontrast.css?2" title="High Contrast"/>
+<link rel="shortcut icon" href="/favicon.png"/>
+<script>window.addEventListener('click', function(e,s,r){if(e.target.nodeName==='CODE'&&e.detail===3){s=window.getSelection();s.removeAllRanges();r=document.createRange();r.selectNodeContents(e.target);s.addRange(r);}});</script>
+</head><!--
+
+
+
+
+Oh, hello!  Funny seeing you here.
+
+I appreciate your enthusiasm, but you aren't going to find much down here.
+There certainly aren't clues to any of the puzzles.  The best surprises don't
+even appear in the source until you unlock them for real.
+
+Please be careful with automated requests; I'm not a massive company, and I can
+only take so much traffic.  Please be considerate so that everyone gets to play.
+
+If you're curious about how Advent of Code works, it's running on some custom
+Perl code. Other than a few integrations (auth, analytics, social media), I
+built the whole thing myself, including the design, animations, prose, and all
+of the puzzles.
+
+The puzzles are most of the work; preparing a new calendar and a new set of
+puzzles takes all of my free time for months every year. A lot of effort went
+into building this thing - I hope you're enjoying playing it as much as I
+enjoyed making it for you!
+
+If you'd like to hang out, I'm @was.tl on Bluesky and @ericwastl@hachyderm.io
+on Mastodon.
+
+- Eric Wastl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-->
+<body>
+<header><div><h1 class="title-global"><a href="/">Advent of Code</a></h1><nav><ul><li><a href="/2025/about">[About]</a></li><li><a href="/2025/events">[Events]</a></li><li><a href="https://cottonbureau.com/people/advent-of-code" target="_blank">[Shop]</a></li><li><a href="/2025/settings">[Settings]</a></li><li><a href="/2025/auth/logout">[Log Out]</a></li></ul></nav><div class="user">thechriswalker <span class="star-count">4*</span></div></div><div><h1 class="title-event">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="title-event-wrap">y(</span><a href="/2025">2025</a><span class="title-event-wrap">)</span></h1><nav><ul><li><a href="/2025">[Calendar]</a></li><li><a href="/2025/support">[AoC++]</a></li><li><a href="/2025/sponsors">[Sponsors]</a></li><li><a href="/2025/leaderboard/private">[Leaderboards]</a></li><li><a href="/2025/stats">[Stats]</a></li></ul></nav></div></header>
+
+<div id="sidebar">
+<div id="sponsor"><div class="quiet">Our <a href="/2025/sponsors">sponsors</a> help make Advent of Code possible:</div><div class="sponsor"><a href="/2025/sponsors/redirect?url=https%3A%2F%2Fkotl%2Ein%2Faoc2025" target="_blank" onclick="if(ga)ga('send','event','sponsor','sidebar',this.href);" rel="noopener">Kotlin by JetBrains</a> - Join our series of 5 festive livestreams on Dec 1-5 to tackle puzzles in Kotlin with fun guests, warm community, and prizes to win!</div></div>
+</div><!--/sidebar-->
+
+<main>
+<article><p>These are your personal leaderboard times:</p><pre>Day   <span class="leaderboard-daydesc-first">-Part 1-</span>   <span class="leaderboard-daydesc-both">-Part 2-</span>
+  2   05:38:52   06:21:33
+  1   05:01:01   05:29:25
+</pre>
+</article>
+</main>
+
+<!-- ga -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-69522494-1', 'auto');
+ga('set', 'anonymizeIp', true);
+ga('send', 'pageview');
+</script>
+<!-- /ga -->
+</body>
+</html>`
