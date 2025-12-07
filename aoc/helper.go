@@ -374,6 +374,16 @@ func GridCoords(idx, stride int) (x, y int) {
 	return
 }
 
+func FindInGrid(g ByteGrid, b byte) []V2 {
+	out := []V2{}
+	IterateByteGridv(g, func(v V2, b2 byte) {
+		if b2 == b {
+			out = append(out, v)
+		}
+	})
+	return out
+}
+
 type V2 struct {
 	X, Y int
 }
@@ -552,6 +562,10 @@ func DisableDebug() func() {
 	return func() {
 		debugEnabled = before
 	}
+}
+
+func IsDebug() bool {
+	return debugEnabled
 }
 
 func Debugf(msg string, args ...any) {
