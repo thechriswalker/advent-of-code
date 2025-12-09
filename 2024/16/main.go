@@ -23,11 +23,11 @@ type State struct {
 
 // Implement Solution to Problem 1
 func solve1(input string) string {
-	cost, _ := solve(input, false)
+	cost, _ := solve(input)
 	return fmt.Sprint(cost)
 }
 
-func solve(input string, debug bool) (cost, tiles int) {
+func solve(input string) (cost, tiles int) {
 
 	// make a grid and do a depth-first search with postion/direction => score
 	// as a cache. If we hit a match with a higher score, we can stop that branch.
@@ -124,7 +124,7 @@ func solve(input string, debug bool) (cost, tiles int) {
 		}
 	}
 
-	if debug {
+	if aoc.IsDebug() {
 		aoc.PrintByteGridC(g, map[byte]aoc.Color{
 			'O': aoc.BoldMagenta,
 			'#': aoc.BoldWhite,
@@ -137,7 +137,7 @@ func solve(input string, debug bool) (cost, tiles int) {
 // Implement Solution to Problem 2
 func solve2(input string) string {
 	// this time we need to keep track of our path.
-	_, tiles := solve(input, true)
+	_, tiles := solve(input)
 	return fmt.Sprint(tiles)
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"math"
 	"os"
 	"slices"
 	"strconv"
@@ -413,6 +414,33 @@ type V3 struct {
 
 func Vec3(x, y, z int) V3 {
 	return V3{x, y, z}
+}
+
+func (v V3) EuclideanDistance(other V3) float64 {
+	dx := float64(v.X - other.X)
+	dy := float64(v.Y - other.Y)
+	dz := float64(v.Z - other.Z)
+	return math.Sqrt(dx*dx + dy*dy + dz*dz)
+}
+
+// arbitrary ordering function.
+func (v V3) Compare(other V3) int {
+	if v.X < other.X {
+		return -1
+	} else if v.X > other.X {
+		return 1
+	}
+	if v.Y < other.Y {
+		return -1
+	} else if v.Y > other.Y {
+		return 1
+	}
+	if v.Z < other.Z {
+		return -1
+	} else if v.Z > other.Z {
+		return 1
+	}
+	return 0
 }
 
 var (
