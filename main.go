@@ -210,13 +210,13 @@ func main() {
 
 
 // Implement Solution to Problem 1
-func solve1(input string) string {
-	return "<unsolved>"
+func solve1(input string) int {
+	return 0
 }
 
 // Implement Solution to Problem 2
-func solve2(input string) string {
-	return "<unsolved>"
+func solve2(input string) int {
+	return 0
 }
 `))
 
@@ -228,16 +228,16 @@ import (
 
 // tests for the AdventOfCode {{.Year}} day {{.Day}} solutions
 
-type Case struct {
+type Case[T any] struct {
 	In  string
-	Out string
+	Out T
 }
 
 const example = ` + "``" + `
 
-var problem1cases = []Case{
+var problem1cases = []Case[int]{
 	// cases here
-	{example, ""},
+	{example, -1},
 }
 
 func TestProblem1(t *testing.T) {
@@ -249,9 +249,9 @@ func TestProblem1(t *testing.T) {
 	}
 }
 
-var problem2cases = []Case{
+var problem2cases = []Case[int]{
 	// cases here
-	{example, ""},
+	{example, -1},
 }
 
 func TestProblem2(t *testing.T) {

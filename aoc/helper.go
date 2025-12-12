@@ -448,6 +448,12 @@ var (
 	South = V2{0, 1}
 	East  = V2{1, 0}
 	West  = V2{-1, 0}
+
+	// and the corners.
+	NorthWest = North.Add(West)
+	NorthEast = North.Add(East)
+	SouthWest = South.Add(West)
+	SouthEast = South.Add(East)
 )
 
 func CardinalClockwise(v V2) V2 {

@@ -43,7 +43,7 @@ const (
 	badTiming  = time.Second
 )
 
-func timeAndPrint(fn func(in string) string, input string, answers io.Writer, timingOnly bool) {
+func timeAndPrint[T any](fn func(in string) T, input string, answers io.Writer, timingOnly bool) {
 	t := time.Now()
 	s := fn(input)
 	fmt.Fprintln(answers, s)
@@ -58,7 +58,7 @@ func timeAndPrint(fn func(in string) string, input string, answers io.Writer, ti
 		c = 93
 	}
 	if !timingOnly {
-		fmt.Printf("\x1b[1;37m%s\x1b[0m ", s)
+		fmt.Printf("\x1b[1;37m%v\x1b[0m ", s)
 	}
 
 	fmt.Printf("\x1b[%dm%v\x1b[0m\n", c, d)
@@ -77,8 +77,8 @@ func SupressOutput() func() {
 	}
 }
 
-func wrapSuppressOutput(f func(string) string) func(string) string {
-	return func(s string) string {
+func wrapSuppressOutput[T any](f func(string) T) func(string) T {
+	return func(s string) T {
 		defer SupressOutput()()
 		return f(s)
 	}
@@ -86,7 +86,7 @@ func wrapSuppressOutput(f func(string) string) func(string) string {
 
 // if we have the environment variable for check answers
 // --check-answers=1:abc
-func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
+func Run[T1 any, T2 any](YEAR, DAY int, solve1 func(string) T1, solve2 func(string) T2) {
 	testsOnly := flag.Bool("test-only", false, "Only run the tests")
 	timingOnly := flag.Bool("timing-only", false, "Show only timings")
 	answersCheck := flag.Bool("check-answers", false, "Check Solutions against know answers")
@@ -125,8 +125,8 @@ func Run(YEAR, DAY int, solve1, solve2 func(string) string) {
 		fails := 100 //NB this is supposed to start at `100`
 		in := getInput()
 		answer1, answer2 := readAnswers(YEAR, DAY)
-		result1 := solve1(in)
-		result2 := solve2(in)
+		result1 := fmt.Sprint(solve1(in))
+		result2 := fmt.Sprint(solve2(in))
 		fmt.Printf("%d-%02d Part 1: ", YEAR, DAY)
 		if result1 == answer1 {
 			fmt.Println("\x1b[1;32mPASS\x1b[0m")
