@@ -186,7 +186,9 @@ func (m Machine) AdjustJoltage_BreadthFirstLikePart1() int {
 }
 
 func (m Machine) AdjustJoltage_Solver() int {
-	// need a Z3 solver here... which is a bummer. I don't like having to use dependencies in this code...
+	// need a Z3 solver here... which is a bummer.
+	// I don't like having to use dependencies in this code...
+	// I might just call it a fail for today an move on.
 	return 0
 
 }

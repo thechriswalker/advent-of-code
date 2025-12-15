@@ -331,8 +331,8 @@ func (g *SparseByteGrid) At(x, y int) (byte, bool) {
 func (g *SparseByteGrid) Atv(v V2) (byte, bool) {
 	return g.At(v.X, v.Y)
 }
-func (g *SparseByteGrid) Width() int  { return g.ymax - g.ymin }
-func (g *SparseByteGrid) Height() int { return g.xmax - g.xmin }
+func (g *SparseByteGrid) Width() int  { return 1 + g.ymax - g.ymin }
+func (g *SparseByteGrid) Height() int { return 1 + g.xmax - g.xmin }
 func (g *SparseByteGrid) Bounds() (x1, y1, x2, y2 int) {
 	return g.xmin, g.ymin, g.xmax, g.ymax
 }
@@ -395,6 +395,12 @@ func (v V2) Add(o V2) V2 {
 
 func (v V2) ManhattanDistance(o V2) int {
 	return abs(v.X-o.X) + abs(v.Y-o.Y)
+}
+
+func (v V2) EuclideanDistance(other V2) float64 {
+	dx := float64(v.X - other.X)
+	dy := float64(v.Y - other.Y)
+	return math.Sqrt(dx*dx + dy*dy)
 }
 
 func abs(x int) int {

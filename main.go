@@ -216,7 +216,7 @@ func solve1(input string) int {
 
 // Implement Solution to Problem 2
 func solve2(input string) int {
-	return 0
+	panic("part 2 unsolved)
 }
 `))
 
@@ -244,7 +244,7 @@ func TestProblem1(t *testing.T) {
 	for _, c := range problem1cases {
 		actual := solve1(c.In)
 		if c.Out != actual {
-			t.Fatalf("Expected: '%s', Actual: '%s'", c.Out, actual)
+			t.Fatalf("Expected: '%v', Actual: '%v'", c.Out, actual)
 		}
 	}
 }
@@ -258,7 +258,7 @@ func TestProblem2(t *testing.T) {
 	for _, c := range problem2cases {
 		actual := solve2(c.In)
 		if c.Out != actual {
-			t.Fatalf("Expected: '%s', Actual: '%s'", c.Out, actual)
+			t.Fatalf("Expected: '%v', Actual: '%v'", c.Out, actual)
 		}
 	}
 }
